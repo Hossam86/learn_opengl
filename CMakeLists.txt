@@ -13,8 +13,10 @@ CPMAddPackage(
 )
 
 include_directories(${CMAKE_SOURCE_DIR}/include)
-add_executable(hello_triangle src/getting_started/hello_traingle.cpp src/glad.c)
-add_executable(hello_triangle_indexed src/getting_started/hello_traingle_indexed.cpp src/glad.c)
+add_executable(hello_triangle src/getting_started/hello_triangle.cpp src/glad.c)
+add_executable(hello_triangle_indexed src/getting_started/hello_triangle_indexed.cpp src/glad.c)
+add_executable(shader_uniform src/getting_started/shader_uniform.cpp src/glad.c)
 
 target_link_libraries(hello_triangle glfw)
 target_link_libraries(hello_triangle_indexed glfw)
+target_link_libraries(shader_uniform glfw)
