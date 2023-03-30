@@ -1,10 +1,12 @@
-#ifndef LEARN_OPENGL_SHADER_S_H
-#define LEARN_OPENGL_SHADER_S_H
+#ifndef SHADER_H
+#define SHADER_H
 
 #include <glad/glad.h>
-#include <iostream>
-#include <sstream>
+
+#include <string>
 #include <fstream>
+#include <sstream>
+#include <iostream>
 
 class Shader {
 public:
@@ -13,44 +15,36 @@ public:
     // constructor generates the shader on the fly
     // ------------------------------------------------------------------------
     Shader(const char *vertexPath, const char *fragmentPath) {
-        // retrieve the vertex and fragment shader source code from filepath
+        // 1. retrieve the vertex/fragment source code from filePath
         std::string vertexCode;
         std::string fragmentCode;
         std::ifstream vShaderFile;
         std::ifstream fShaderFile;
-
         // ensure ifstream objects can throw exceptions:
         vShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
         fShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-
         try {
+            // open files
             vShaderFile.open(vertexPath);
             fShaderFile.open(fragmentPath);
-            std::stringstream vShaderstream;
-            std::stringstream fShaderstream;
-
+            std::stringstream vShaderStream, fShaderStream;
             // read file's buffer contents into streams
-            vShaderstream << vShaderFile;
-            fShaderstream << fShaderFile;
-
-            // close file handles
+            vShaderStream << vShaderFile.rdbuf();
+            fShaderStream << fShaderFile.rdbuf();
+            // close file handlers
             vShaderFile.close();
             fShaderFile.close();
-
-            //convert stream to string
-            vertexCode = vShaderstream.str();
-            fragmentCode = fShaderstream.str();
+            // convert stream into string
+            vertexCode = vShaderStream.str();
+            fragmentCode = fShaderStream.str();
         }
         catch (std::ifstream::failure &e) {
             std::cout << "ERROR::SHADER::FILE_NOT_SUCCESSFULLY_READ: " << e.what() << std::endl;
         }
         const char *vShaderCode = vertexCode.c_str();
-        const char *fShaderCode = vertexCode.c_str();
-
-
-        //2. compile shader
+        const char *fShaderCode = fragmentCode.c_str();
+        // 2. compile shaders
         unsigned int vertex, fragment;
-        //vertex shader
         // vertex shader
         vertex = glCreateShader(GL_VERTEX_SHADER);
         glShaderSource(vertex, 1, &vShaderCode, NULL);
@@ -118,4 +112,4 @@ private:
     }
 };
 
-#endif //LEARN_OPENGL_SHADER_S_H
+#endif
