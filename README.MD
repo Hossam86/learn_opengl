@@ -1,0 +1,1 @@
+cmake -B build-debug -S . -DCPM_SOURCE_CACHE=/Users/hossamsamir/Projects/cpm_cache
