@@ -25,7 +25,7 @@ CPMAddPackage(
 
 include_directories(${CMAKE_SOURCE_DIR}/include)
 add_executable(hello_window src/getting_started/_1_hello_window.cpp src/glad.c)
-add_executable(hello_triangle src/getting_started/hello_triangle.cpp src/glad.c)
+add_executable(hello_triangle src/getting_started/_2_hello_triangle.cpp src/glad.c)
 add_executable(hello_triangle_indexed src/getting_started/hello_triangle_indexed.cpp src/glad.c)
 add_executable(shader_uniform src/getting_started/shader_uniform.cpp src/glad.c)
 add_executable(shaders_interpolation src/getting_started/shaders_interpolation.cpp src/glad.c)
