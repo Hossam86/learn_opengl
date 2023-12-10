@@ -21,7 +21,8 @@ void processInput(GLFWwindow *window)
 
 int main()
 {
-    // initialization
+    // glfw:initialization and configuration
+    //-------------------------------------------------------
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -30,7 +31,8 @@ int main()
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif
 
-    // create window
+    // glfw: window creation
+    //-------------------------------------------------------
     GLFWwindow *window = glfwCreateWindow(800, 600, "Learn OpenGL", NULL, NULL);
     if (window == NULL)
     {
@@ -41,6 +43,7 @@ int main()
     glfwMakeContextCurrent(window);
 
     // we want to initialize GLAD before we call any OpenGL function:
+    //-------------------------------------------------------
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
         std::cout << "Failed to initialize GLAD" << std::endl;
