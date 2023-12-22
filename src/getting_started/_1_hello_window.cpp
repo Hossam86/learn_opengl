@@ -1,23 +1,19 @@
+// ref https://learnopengl.com/Getting-started/Creating-a-window
+// important definitions
+// OpenGL Context->
+
 #include "glad/glad.h"
 #include <GLFW/glfw3.h>
 #include <iostream>
 
 // callback function on the window that gets called each time the window is resized.
-void frame_size_buffer_callback(GLFWwindow *window, int width, int height)
-{
-    glViewport(0, 0, width, height);
-}
+void frame_size_buffer_callback(GLFWwindow *window, int width, int height);
 
 // We also want to have some form of input control in GLFW and we can achieve this with several of GLFW's input
 //  functions. We'll be using GLFW's glfwGetKey function that takes the window as input together with a key.
 //  The function returns whether this key is currently being pressed. We're creating a processInput function
 // to keep all input code organized
-
-void processInput(GLFWwindow *window)
-{
-    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-        glfwSetWindowShouldClose(window, true);
-}
+void processInput(GLFWwindow *window);
 
 int main()
 {
@@ -65,6 +61,8 @@ int main()
         processInput(window);
 
         // render commands,
+        //....
+
         // As you may recall from the OpenGL chapter, the glClearColor function is a state-setting function
         // and glClear is a state-using function in that it uses the current state to retrieve the clearing
         // color from.
@@ -80,4 +78,14 @@ int main()
     //  were allocated. We can do this via the glfwTerminate function that we call at the end of the main function.
     glfwTerminate();
     return 0;
+}
+
+void frame_size_buffer_callback(GLFWwindow *window, int width, int height);
+{
+    glViewport(0, 0, width, height);
+}
+void processInput(GLFWwindow *window);
+{
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+        glfwSetWindowShouldClose(window, true);
 }

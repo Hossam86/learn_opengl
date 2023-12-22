@@ -3,7 +3,6 @@
 #include <GLFW/glfw3.h>
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height);
-
 void processInput(GLFWwindow *window);
 
 // settings
@@ -26,7 +25,7 @@ const char *fragmentShaderSource = "#version 330 core\n"
 								   "    FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
 								   "} ";
 
-// everything is in 3D space, but the screen or window is a 2D array of pixels so a large part of OpenGL's
+// Everything is in 3D space, but the screen or window is a 2D array of pixels so a large part of OpenGL's
 //  work is about transforming all 3D coordinates to 2D pixels that fit on your screen
 // The process of transforming 3D coordinates to 2D pixels is managed by the graphics pipeline of OpenGL.
 // the first transforms your 3D coordinates into 2D coordinates and the second part transforms the 2D coordinates
@@ -140,14 +139,23 @@ int main()
 		0.0f, 0.5f, 0.0f	// top
 	};
 
-	unsigned int VAO, VBO;
-	glGenVertexArrays(1, &VAO);
+	// with the vertex data defined, we want to send it to pipeline entry gate (vertex_shader) this done by creating
+	// memory on the GPU to store the vertex data, configure how should OpenGL interpret the memory  and specify how
+	// to send the data to graphics processor. this can be done through vertex buffer object (VBO)
+
+	// Just like any object in OpenGL, so we can generate one with a buffer ID using the glGenBuffers function:
+
+	unsigned int VBO;
 	glGenBuffers(1, &VBO);
+
+	// OpenGL has many types of buffer objects and the buffer type of a vertex buffer object is GL_ARRAY_BUFFER.
+	//  OpenGL allows us to bind to several buffers at once as long as they have a different buffer type.
+	//  We can bind the newly created buffer to the GL_ARRAY_BUFFER target with the glBindBuffer function:
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 
 	// bind the Vertex Array Object first, then bind and set vertex buffer(s), and then configure vertex attributes(s).
 	glBindVertexArray(VAO);
 
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)0);
