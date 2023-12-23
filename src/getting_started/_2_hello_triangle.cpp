@@ -57,20 +57,20 @@ GLFWwindow *create_glfw_window(const char *title, int width, int height);
 // initialize openGL funcs
 bool initialize_opengl_context(GLFWwindow *window);
 
+// window resize callback func
+void framebuffer_size_callback(GLFWwindow *window, int width, int height);
+
 // copy drawing data to GPU and return buffers IDs
 void copy_vertices_to_gpu(float *vertices, GLuint &VBO, GLuint &VAO);
 
 // compile, link and check shader program
 GLuint process_shader_program();
 
-// continuous drawing  loop until glfw window got terminate event
-void render_loop(GLFWwindow *window, GLuint shader_program, GLuint VAO);
-
-// resize callback func
-void framebuffer_size_callback(GLFWwindow *window, int width, int height);
-
 // process user input
 void processInput(GLFWwindow *window);
+
+// continuous drawing  loop until glfw window got terminate event
+void render_loop(GLFWwindow *window, GLuint shader_program, GLuint VAO);
 
 int main()
 {
@@ -144,7 +144,7 @@ GLFWwindow *create_glfw_window(const char *title, int width, int height)
 
 	// glfw: window creation
 	//-------------------------------------------------------
-	GLFWwindow *window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, title, NULL, NULL);
+	GLFWwindow *window = glfwCreateWindow(width, height, title, NULL, NULL);
 	return window;
 }
 
@@ -165,11 +165,19 @@ bool initialize_opengl_context(GLFWwindow *window)
 
 void copy_vertices_to_gpu(float *vertices, GLuint &VBO, GLuint &VAO)
 {
+
 	// with the vertex data defined, we want to send it to pipeline entry gate (vertex_shader) this done by creating
 	// memory on the GPU to store the vertex data, configure how should OpenGL interpret the memory  and specify how
 	// to send the data to graphics processor. this can be done through vertex buffer object (VBO)
 	// Just like any object in OpenGL, so we can generate one with a buffer ID using the glGenBuffers function:
 	glGenBuffers(1, &VBO);
+
+	// To use a VAO all you have to do is bind the VAO using glBindVertexArray.
+	// From that point on we should bind/configure the corresponding VBO(s) and attribute pointer(s) and then
+	// unbind the VAO for later use. As soon as we want to draw an object, we simply bind the VAO with the
+	// preferred settings before drawing the object and that is it. In code this would look a bit like this:
+	glGenVertexArrays(1, &VAO);
+	glBindVertexArray(VAO);
 
 	// OpenGL has many types of buffer objects and the buffer type of a vertex buffer object is GL_ARRAY_BUFFER.
 	//  OpenGL allows us to bind to several buffers at once as long as they have a different buffer type.
@@ -183,6 +191,10 @@ void copy_vertices_to_gpu(float *vertices, GLuint &VBO, GLuint &VAO)
 	// tell OpenGL how it should interpret the vertex data (per vertex attribute) using glVertexAttribPointer:
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)0);
 	glEnableVertexAttribArray(0);
+
+	// You can unbind the VAO afterwards so other VAO calls won't accidentally modify this VAO, but this rarely happens. Modifying other
+	// VAOs requires a call to glBindVertexArray anyways so we generally don't unbind VAOs (nor VBOs) when it's not directly necessary.
+	glBindVertexArray(0);
 }
 
 GLuint process_shader_program()
@@ -245,11 +257,10 @@ GLuint process_shader_program()
 
 void render_loop(GLFWwindow *window, GLuint shader_program, GLuint VAO)
 {
-
 	// render loop
 	while (!glfwWindowShouldClose(window))
 	{
-		// input
+		// user inputs
 		//  ------------------------------------------------------------------
 		processInput(window);
 
