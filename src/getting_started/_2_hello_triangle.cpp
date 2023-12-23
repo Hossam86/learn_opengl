@@ -1,30 +1,3 @@
-#include <iostream>
-#include "glad/glad.h"
-#include <GLFW/glfw3.h>
-
-void framebuffer_size_callback(GLFWwindow *window, int width, int height);
-void processInput(GLFWwindow *window);
-
-// settings
-const unsigned int SCR_WIDTH = 800;
-const unsigned int SCR_HEIGHT = 600;
-
-// shader source
-const char *vertexShaderSource = "#version 330 core\n"
-								 "layout (location = 0) in vec3 aPos;\n"
-								 "void main()\n"
-								 "{\n"
-								 "   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
-								 "}\0";
-
-const char *fragmentShaderSource = "#version 330 core\n"
-								   "out vec4 FragColor;\n"
-								   "\n"
-								   "void main()\n"
-								   "{\n"
-								   "    FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
-								   "} ";
-
 // Everything is in 3D space, but the screen or window is a 2D array of pixels so a large part of OpenGL's
 //  work is about transforming all 3D coordinates to 2D pixels that fit on your screen
 // The process of transforming 3D coordinates to 2D pixels is managed by the graphics pipeline of OpenGL.
@@ -48,17 +21,61 @@ const char *fragmentShaderSource = "#version 330 core\n"
 //		for almost all the cases we only have to work with the vertex and fragment shader.
 //		The geometry shader is optional and usually left to its default shader
 
+#include <iostream>
+#include "glad/glad.h"
+#include <GLFW/glfw3.h>
+
+// settings
+const char *TITLE = "learn openGL >> Hello Triangle";
+const unsigned int SCR_WIDTH = 800;
+const unsigned int SCR_HEIGHT = 600;
+
+// shader source
+const char *vertexShaderSource = "#version 330 core\n"
+								 "layout (location = 0) in vec3 aPos;\n"
+								 "void main()\n"
+								 "{\n"
+								 "   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
+								 "}\0";
+
+const char *fragmentShaderSource = "#version 330 core\n"
+								   "out vec4 FragColor;\n"
+								   "\n"
+								   "void main()\n"
+								   "{\n"
+								   "    FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
+								   "} ";
+
+// steps
+// ------------------------------------------------------------------
+// generate data for drawing
 float *generate_vertices_data();
-GLFWwindow *create_glfw_window();
+
+// create GLFW Window
+GLFWwindow *create_glfw_window(const char *title, int width, int height);
+
+// initialize openGL funcs
 bool initialize_opengl_context(GLFWwindow *window);
+
+// copy drawing data to GPU and return buffers IDs
 void copy_vertices_to_gpu(float *vertices, GLuint &VBO, GLuint &VAO);
+
+// compile, link and check shader program
 GLuint process_shader_program();
+
+// continuous drawing  loop until glfw window got terminate event
 void render_loop(GLFWwindow *window, GLuint shader_program, GLuint VAO);
+
+// resize callback func
+void framebuffer_size_callback(GLFWwindow *window, int width, int height);
+
+// process user input
+void processInput(GLFWwindow *window);
 
 int main()
 {
 	// create GLFW window
-	GLFWwindow *window = create_glfw_window();
+	GLFWwindow *window = create_glfw_window(TITLE, SCR_WIDTH, SCR_HEIGHT);
 
 	// check for success
 	if (window == NULL)
@@ -101,9 +118,8 @@ int main()
 
 float *generate_vertices_data()
 {
-	// set up vertex data (and buffer(s)) and configure vertex attributes
+	// set up vertex data
 	// ------------------------------------------------------------------
-
 	float *vertices = new float[9]{
 		-0.5f, -0.5f, 0.0f, // left
 		0.5f, -0.5f, 0.0f,	// right
@@ -113,7 +129,7 @@ float *generate_vertices_data()
 	return vertices;
 }
 
-GLFWwindow *create_glfw_window()
+GLFWwindow *create_glfw_window(const char *title, int width, int height)
 {
 	// glfw:initialization and configuration
 	//-------------------------------------------------------
@@ -128,7 +144,7 @@ GLFWwindow *create_glfw_window()
 
 	// glfw: window creation
 	//-------------------------------------------------------
-	GLFWwindow *window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "learn_Opengl", NULL, NULL);
+	GLFWwindow *window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, title, NULL, NULL);
 	return window;
 }
 
