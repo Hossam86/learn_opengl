@@ -25,5 +25,5 @@ CPMAddPackage(
 
 include_directories(${CMAKE_SOURCE_DIR}/include)
 
-add_subdirectory(src/getting_started)
+add_subdirectory(src/_01_getting_started)
 

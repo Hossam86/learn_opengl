@@ -22,43 +22,15 @@
 //		The geometry shader is optional and usually left to its default shader
 
 #include <iostream>
-#include "glad/glad.h"
-#include <GLFW/glfw3.h>
+#include "common.h"
 
 // settings
 const char *TITLE = "learn openGL >> Hello Triangle";
-const unsigned int SCR_WIDTH = 800;
-const unsigned int SCR_HEIGHT = 600;
-
-// shader source
-const char *vertexShaderSource = "#version 330 core\n"
-								 "layout (location = 0) in vec3 aPos;\n"
-								 "void main()\n"
-								 "{\n"
-								 "   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
-								 "}\0";
-
-const char *fragmentShaderSource = "#version 330 core\n"
-								   "out vec4 FragColor;\n"
-								   "\n"
-								   "void main()\n"
-								   "{\n"
-								   "    FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
-								   "} ";
 
 // steps
 // ------------------------------------------------------------------
-// generate data for drawing
-float *generate_vertices_data();
-
-// create GLFW Window
-GLFWwindow *create_glfw_window(const char *title, int width, int height);
-
-// initialize openGL funcs
-bool initialize_opengl_context(GLFWwindow *window);
-
-// window resize callback func
-void framebuffer_size_callback(GLFWwindow *window, int width, int height);
+// generate triangle for drawing
+float *generate_triangle_data();
 
 // copy drawing data to GPU and return buffers IDs
 void copy_vertices_to_gpu(float *vertices, GLuint &VBO, GLuint &VAO);
@@ -88,11 +60,12 @@ int main()
 	if (!initialize_opengl_context(window))
 		return -1;
 
+	// We do have to tell GLFW we want to call this function on every window resize by registering it:
 	// register call back function to change view port when the window size changed
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
 	// generate drawing data
-	float *vertices = generate_vertices_data();
+	float *vertices = generate_triangle_data();
 
 	// copy vertices to gpu
 	GLuint VBO, VAO;
@@ -116,7 +89,7 @@ int main()
 	return 0;
 }
 
-float *generate_vertices_data()
+float *generate_triangle_data()
 {
 	// set up vertex data
 	// ------------------------------------------------------------------
@@ -127,40 +100,6 @@ float *generate_vertices_data()
 	};
 
 	return vertices;
-}
-
-GLFWwindow *create_glfw_window(const char *title, int width, int height)
-{
-	// glfw:initialization and configuration
-	//-------------------------------------------------------
-	glfwInit();
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-#ifdef __APPLE__
-	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-#endif
-
-	// glfw: window creation
-	//-------------------------------------------------------
-	GLFWwindow *window = glfwCreateWindow(width, height, title, NULL, NULL);
-	return window;
-}
-
-bool initialize_opengl_context(GLFWwindow *window)
-{
-	// Before you can use the OpenGL API, you must have a current OpenGL context.
-	glfwMakeContextCurrent(window);
-
-	// glad: load all opengl function pointers (We should initialize GLAD before we call any OpenGL function)
-	//-------------------------------------------------------
-	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
-	{
-		std::cout << "Failed to initialize GLAD" << std::endl;
-		return false;
-	}
-	return true;
 }
 
 void copy_vertices_to_gpu(float *vertices, GLuint &VBO, GLuint &VAO)
@@ -281,12 +220,6 @@ void render_loop(GLFWwindow *window, GLuint shader_program, GLuint VAO)
 	}
 }
 
-void framebuffer_size_callback(GLFWwindow *window, int width, int height)
-{
-	glViewport(0, 0, width, height);
-}
-
-void processInput(GLFWwindow *window)
 {
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);

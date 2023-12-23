@@ -1,5 +1,5 @@
 add_executable(hello_window _1_hello_window.cpp ../glad.c)
-add_executable(hello_triangle _2_hello_triangle.cpp ../glad.c)
+add_executable(hello_triangle common.h _2_hello_triangle.cpp ../glad.c)
 # add_executable(hello_triangle_indexed _3_hello_triangle_indexed.cpp ../glad.c)
 # add_executable(shader_uniform shader_uniform.cpp ../glad.c)
 # add_executable(shaders_interpolation shaders_interpolation.cpp ../glad.c)
