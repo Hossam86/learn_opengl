@@ -48,7 +48,72 @@ const char *fragmentShaderSource = "#version 330 core\n"
 //		for almost all the cases we only have to work with the vertex and fragment shader.
 //		The geometry shader is optional and usually left to its default shader
 
+float *generate_vertices_data();
+GLFWwindow *create_glfw_window();
+bool initialize_opengl_context(GLFWwindow *window);
+void copy_vertices_to_gpu(float *vertices, GLuint &VBO, GLuint &VAO);
+GLuint process_shader_program();
+void render_loop(GLFWwindow *window, GLuint shader_program, GLuint VAO);
+
 int main()
+{
+	// create GLFW window
+	GLFWwindow *window = create_glfw_window();
+
+	// check for success
+	if (window == NULL)
+	{
+		std::cout << "Failed to create GlFW Window! " << std::endl;
+		glfwTerminate();
+		return -1;
+	}
+	// check for GLAD initialization
+	if (!initialize_opengl_context(window))
+		return -1;
+
+	// register call back function to change view port when the window size changed
+	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+
+	// generate drawing data
+	float *vertices = generate_vertices_data();
+
+	// copy vertices to gpu
+	GLuint VBO, VAO;
+	copy_vertices_to_gpu(vertices, VBO, VAO);
+
+	// compile and link shader
+	GLuint shader_program = process_shader_program();
+
+	// render loop
+	render_loop(window, shader_program, VAO);
+
+	// optional: de-allocate all resources once they've outlived their purpose:
+	// ------------------------------------------------------------------------
+	glDeleteVertexArrays(1, &VAO);
+	glDeleteBuffers(1, &VBO);
+	glDeleteProgram(shader_program);
+
+	// glfw: terminate, clearing all previously allocated GLFW resources.
+	// ------------------------------------------------------------------
+	glfwTerminate();
+	return 0;
+}
+
+float *generate_vertices_data()
+{
+	// set up vertex data (and buffer(s)) and configure vertex attributes
+	// ------------------------------------------------------------------
+
+	float *vertices = new float[9]{
+		-0.5f, -0.5f, 0.0f, // left
+		0.5f, -0.5f, 0.0f,	// right
+		0.0f, 0.5f, 0.0f	// top
+	};
+
+	return vertices;
+}
+
+GLFWwindow *create_glfw_window()
 {
 	// glfw:initialization and configuration
 	//-------------------------------------------------------
@@ -64,12 +129,12 @@ int main()
 	// glfw: window creation
 	//-------------------------------------------------------
 	GLFWwindow *window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "learn_Opengl", NULL, NULL);
-	if (window == NULL)
-	{
-		std::cout << "Failed to create GlFW Window! " << std::endl;
-		glfwTerminate();
-		return -1;
-	}
+	return window;
+}
+
+bool initialize_opengl_context(GLFWwindow *window)
+{
+	// Before you can use the OpenGL API, you must have a current OpenGL context.
 	glfwMakeContextCurrent(window);
 
 	// glad: load all opengl function pointers (We should initialize GLAD before we call any OpenGL function)
@@ -77,15 +142,40 @@ int main()
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
 	{
 		std::cout << "Failed to initialize GLAD" << std::endl;
-		return -1;
+		return false;
 	}
-	// register call back function to change view port when the window size changed
-	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+	return true;
+}
 
+void copy_vertices_to_gpu(float *vertices, GLuint &VBO, GLuint &VAO)
+{
+	// with the vertex data defined, we want to send it to pipeline entry gate (vertex_shader) this done by creating
+	// memory on the GPU to store the vertex data, configure how should OpenGL interpret the memory  and specify how
+	// to send the data to graphics processor. this can be done through vertex buffer object (VBO)
+	// Just like any object in OpenGL, so we can generate one with a buffer ID using the glGenBuffers function:
+	glGenBuffers(1, &VBO);
+
+	// OpenGL has many types of buffer objects and the buffer type of a vertex buffer object is GL_ARRAY_BUFFER.
+	//  OpenGL allows us to bind to several buffers at once as long as they have a different buffer type.
+	//  We can bind the newly created buffer to the GL_ARRAY_BUFFER target with the glBindBuffer function:
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+
+	// Then we can make a call to the glBufferData function that copies the previously defined vertex data into
+	// the buffer's memory:
+	glBufferData(GL_ARRAY_BUFFER, 3 * sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+	// tell OpenGL how it should interpret the vertex data (per vertex attribute) using glVertexAttribPointer:
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)0);
+	glEnableVertexAttribArray(0);
+}
+
+GLuint process_shader_program()
+{
 	// build and compile our shader program
 	//-------------------------------------------------------
-	// vertex shader
+	// vertex shader -> first thing we need to do is create a shader object, referenced by an ID
 	unsigned int vertexShader;
+	// We provide the type of shader we want to create as an argument
 	vertexShader = glCreateShader(GL_VERTEX_SHADER);
 	glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
 	glCompileShader(vertexShader);
@@ -120,6 +210,7 @@ int main()
 	glAttachShader(shaderProgram, vertexShader);
 	glAttachShader(shaderProgram, fragmentShader);
 	glLinkProgram(shaderProgram);
+
 	// check for linking errors
 	glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
 	if (!success)
@@ -128,45 +219,16 @@ int main()
 		std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n"
 				  << infoLog << std::endl;
 	}
+
+	// Oh yeah, and don't forget to delete the shader objects once we've linked them into the program object;
+	// we no longer need them anymore:
 	glDeleteShader(vertexShader);
 	glDeleteShader(fragmentShader);
+	return shaderProgram;
+}
 
-	// set up vertex data (and buffer(s)) and configure vertex attributes
-	// ------------------------------------------------------------------
-	float vertices[] = {
-		-0.5f, -0.5f, 0.0f, // left
-		0.5f, -0.5f, 0.0f,	// right
-		0.0f, 0.5f, 0.0f	// top
-	};
-
-	// with the vertex data defined, we want to send it to pipeline entry gate (vertex_shader) this done by creating
-	// memory on the GPU to store the vertex data, configure how should OpenGL interpret the memory  and specify how
-	// to send the data to graphics processor. this can be done through vertex buffer object (VBO)
-
-	// Just like any object in OpenGL, so we can generate one with a buffer ID using the glGenBuffers function:
-
-	unsigned int VBO;
-	glGenBuffers(1, &VBO);
-
-	// OpenGL has many types of buffer objects and the buffer type of a vertex buffer object is GL_ARRAY_BUFFER.
-	//  OpenGL allows us to bind to several buffers at once as long as they have a different buffer type.
-	//  We can bind the newly created buffer to the GL_ARRAY_BUFFER target with the glBindBuffer function:
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-
-	// bind the Vertex Array Object first, then bind and set vertex buffer(s), and then configure vertex attributes(s).
-	glBindVertexArray(VAO);
-
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)0);
-	glEnableVertexAttribArray(0);
-
-	// note that this is allowed, the call to glVertexAttribPointer registered VBO as the vertex attribute's bound vertex buffer object so afterwards we can safely unbind
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-	// You can unbind the VAO afterwards so other VAO calls won't accidentally modify this VAO, but this rarely happens. Modifying other
-	// VAOs requires a call to glBindVertexArray anyways so we generally don't unbind VAOs (nor VBOs) when it's not directly necessary.
-	glBindVertexArray(0);
+void render_loop(GLFWwindow *window, GLuint shader_program, GLuint VAO)
+{
 
 	// render loop
 	while (!glfwWindowShouldClose(window))
@@ -181,7 +243,7 @@ int main()
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		// draw our first triangles
-		glUseProgram(shaderProgram);
+		glUseProgram(shader_program);
 		glBindVertexArray(VAO);
 		glDrawArrays(GL_TRIANGLES, 0, 3);
 
@@ -190,17 +252,6 @@ int main()
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
-
-	// optional: de-allocate all resources once they've outlived their purpose:
-	// ------------------------------------------------------------------------
-	glDeleteVertexArrays(1, &VAO);
-	glDeleteBuffers(1, &VBO);
-	glDeleteProgram(shaderProgram);
-
-	// glfw: terminate, clearing all previously allocated GLFW resources.
-	// ------------------------------------------------------------------
-	glfwTerminate();
-	return 0;
 }
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height)
