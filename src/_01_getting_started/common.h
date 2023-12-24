@@ -25,17 +25,9 @@ const char *fragmentShaderSource = "#version 330 core\n"
 // callback function on the window that gets called each time the window is resized.
 void framebuffer_size_callback(GLFWwindow *window, int width, int height)
 {
+    // glfw: whenever the window size changed (by OS or user resize) this callback function executes
+    // ---------------------------------------------------------------------------------------------
     glViewport(0, 0, width, height);
-}
-
-// We also want to have some form of input control in GLFW and we can achieve this with several of GLFW's input
-//  functions. We'll be using GLFW's glfwGetKey function that takes the window as input together with a key.
-//  The function returns whether this key is currently being pressed. We're creating a processInput function
-// to keep all input code organized
-void processInput(GLFWwindow *window)
-{
-    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-        glfwSetWindowShouldClose(window, true);
 }
 
 // glfw: create,initialization and configue GLFW window
@@ -72,4 +64,14 @@ bool initialize_opengl_context(GLFWwindow *window)
         return false;
     }
     return true;
+}
+
+// We also want to have some form of input control in GLFW and we can achieve this with several of GLFW's input
+//  functions. We'll be using GLFW's glfwGetKey function that takes the window as input together with a key.
+//  The function returns whether this key is currently being pressed. We're creating a processInput function
+// to keep all input code organized
+void processInput(GLFWwindow *window)
+{
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+        glfwSetWindowShouldClose(window, true);
 }

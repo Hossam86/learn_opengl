@@ -18,7 +18,7 @@ int main()
 
     // We do have to tell GLFW we want to call this function on every window resize by registering it:
     // register call back function to change view port when the window size changed
-    glfwSetFramebufferSizeCallback(window, frame_size_buffer_callback);
+    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
     // We don't want the application to draw a single image and then immediately quit and close the window.
     //  We want the application to keep drawing images and handling user input until the program has been

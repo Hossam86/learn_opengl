@@ -86,6 +86,7 @@ int main()
 	// glfw: terminate, clearing all previously allocated GLFW resources.
 	// ------------------------------------------------------------------
 	glfwTerminate();
+	delete vertices;
 	return 0;
 }
 
@@ -218,9 +219,4 @@ void render_loop(GLFWwindow *window, GLuint shader_program, GLuint VAO)
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
-}
-
-{
-	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-		glfwSetWindowShouldClose(window, true);
 }
