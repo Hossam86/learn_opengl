@@ -3,9 +3,13 @@
 
 // settings
 const char *TITLE = "learn_opengl >> indexed_triangle";
+
 void generate_indexed_triangles(float **vertices, int *n_verts, int **indices, int *n_indices);
+
 void copy_vertices_to_gpu(float **vertices, int n_verts, int **indices, int n_indices, GLuint &VBO, GLuint &VAO, GLuint &EBO);
+
 GLuint process_shader_program();
+
 void render_loop(GLFWwindow *window, GLuint shader_program, GLuint VAO);
 
 int main()
