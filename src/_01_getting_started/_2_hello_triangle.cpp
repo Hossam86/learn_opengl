@@ -105,7 +105,6 @@ float *generate_triangle_data()
 
 void copy_vertices_to_gpu(float *vertices, GLuint &VBO, GLuint &VAO)
 {
-
 	// with the vertex data defined, we want to send it to pipeline entry gate (vertex_shader) this done by creating
 	// memory on the GPU to store the vertex data, configure how should OpenGL interpret the memory  and specify how
 	// to send the data to graphics processor. this can be done through vertex buffer object (VBO)
@@ -126,7 +125,7 @@ void copy_vertices_to_gpu(float *vertices, GLuint &VBO, GLuint &VAO)
 
 	// Then we can make a call to the glBufferData function that copies the previously defined vertex data into
 	// the buffer's memory:
-	glBufferData(GL_ARRAY_BUFFER, 3 * sizeof(vertices), vertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, 12 * sizeof(float), vertices, GL_STATIC_DRAW);
 
 	// tell OpenGL how it should interpret the vertex data (per vertex attribute) using glVertexAttribPointer:
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)0);
