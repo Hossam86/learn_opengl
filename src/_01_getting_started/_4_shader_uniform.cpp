@@ -197,6 +197,8 @@ void render_loop(GLFWwindow *window, GLuint shader_program, GLuint VAO)
 		double timeValue = glfwGetTime();
 		float greenValue = static_cast<float>(sin(timeValue) / 2.0 + 0.5);
 		int vertexColorLocation = glGetUniformLocation(shader_program, "ourColor");
+		// updating a uniform does require you to first use the program (by calling glUseProgram),
+		//  because it sets the uniform on the currently active shader program.
 		glUniform4f(vertexColorLocation, 0.0f, greenValue, 0.0f, 1.0f);
 
 		glDrawArrays(GL_TRIANGLES, 0, 3);

@@ -1,76 +1,121 @@
 #include <iostream>
-#include "glad/glad.h"
-#include <GLFW/glfw3.h>
 #include <cmath>
-
-void framebuffer_size_callback(GLFWwindow *window, int width, int height);
-
-void processInput(GLFWwindow *window);
+#include "common.h"
 
 // settings
-const unsigned int SCR_WIDTH = 800;
-const unsigned int SCR_HEIGHT = 600;
+const char *TITLE = "learn_opengl >> shader interpolation";
 
 // shader source
-const char *vertexShaderSource = "#version 330 core\n"
-                                 "layout (location = 0) in vec3 aPos;\n"
-                                 "layout (location = 1) in vec3 aColor;\n"
-                                 "out vec3 ourColor;\n"
-                                 "void main()\n"
-                                 "{\n"
-                                 "   gl_Position = vec4(aPos, 1.0);\n"
-                                 "   ourColor = aColor;\n"
-                                 "}\0";
+const char *vertexShaderSource3 = "#version 330 core\n"
+                                  "layout (location = 0) in vec3 aPos;\n"
+                                  "layout (location = 1) in vec3 aColor;\n"
+                                  "out vec3 ourColor;\n"
+                                  "void main()\n"
+                                  "{\n"
+                                  "   gl_Position = vec4(aPos, 1.0);\n"
+                                  "   ourColor = aColor;\n"
+                                  "}\0";
 
-const char *fragmentShaderSource = "#version 330 core\n"
-                                   "out vec4 FragColor;\n"
-                                   "in vec3 ourColor;\n"
-                                   "void main()\n"
-                                   "{\n"
-                                   "   FragColor = vec4(ourColor, 1.0f);\n"
-                                   "}\n\0";
+const char *fragmentShaderSource3 = "#version 330 core\n"
+                                    "out vec4 FragColor;\n"
+                                    "in vec3 ourColor;\n"
+                                    "void main()\n"
+                                    "{\n"
+                                    "   FragColor = vec4(ourColor, 1.0f);\n"
+                                    "}\n\0";
+
+float *generate_colored_triangle();
+
+void copy_vertices_to_gpu(float *vertices, GLuint &VBO, GLuint &VAO);
+
+// build and compile our shader program
+GLuint process_shader_program();
+
+void render_loop(GLFWwindow *window, GLuint shader, GLuint VAO);
 
 int main()
 {
-    // glfw:initialization and configuration
+    // glfw:initialization, configuration and window creation
     //-------------------------------------------------------
-    glfwInit();
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-#ifdef __APPLE__
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-#endif
-
-    // glfw: window creation
-    //-------------------------------------------------------
-    GLFWwindow *window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "learn_Opengl", NULL, NULL);
-
+    GLFWwindow *window = create_glfw_window(TITLE, SCR_WIDTH, SCR_HEIGHT);
     if (window == NULL)
     {
         std::cout << "Failed to create GlFW Window! " << std::endl;
         glfwTerminate();
         return -1;
     }
-    glfwMakeContextCurrent(window);
-    // register call back function to change view port when the window size changed
-    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-
     // glad: load all opengl function pointers (We should initialize GLAD before we call any OpenGL function)
     //-------------------------------------------------------
-    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+    if (!initialize_opengl_context(window))
     {
         std::cout << "Failed to initialize GLAD" << std::endl;
         return -1;
     }
 
+    // register call back function to change view port when the window size changed
+    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+
     // build and compile our shader program
     //-------------------------------------------------------
+    GLuint shader_program = process_shader_program();
+
+    // set up vertex data (and buffer(s)) and configure vertex attributes
+    // ------------------------------------------------------------------
+    float *vertices = generate_colored_triangle();
+    unsigned int VBO, VAO;
+    copy_vertices_to_gpu(vertices, VBO, VAO);
+
+    render_loop(window, shader_program, VAO);
+
+    // optional: de-allocate all resources once they've outlived their purpose:
+    // ------------------------------------------------------------------------
+    glDeleteVertexArrays(1, &VAO);
+    glDeleteBuffers(1, &VBO);
+    glDeleteProgram(shader_program);
+
+    // glfw: terminate, clearing all previously allocated GLFW resources.
+    // ------------------------------------------------------------------
+    glfwTerminate();
+    return 0;
+}
+
+float *generate_colored_triangle()
+{
+    float *vertices = new float[18]{
+        // positions         // colors
+        0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f,  // bottom right
+        -0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, // bottom left
+        0.0f, 0.5f, 0.0f, 0.0f, 0.0f, 1.0f    // top
+
+    };
+
+    return vertices;
+}
+
+void copy_vertices_to_gpu(float *vertices, GLuint &VBO, GLuint &VAO)
+{
+    glGenVertexArrays(1, &VAO);
+    glGenBuffers(1, &VBO);
+    glBindVertexArray(VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, 3 * 6 * sizeof(float), vertices, GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *)(0));
+    glEnableVertexAttribArray(0);
+
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+
+    glBindVertexArray(0);
+}
+
+GLuint process_shader_program()
+{
+    // build and compile our shader program
+    // ------------------------------------
     // vertex shader
-    unsigned int vertexShader;
-    vertexShader = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
+    unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);
+    glShaderSource(vertexShader, 1, &vertexShaderSource3, NULL);
     glCompileShader(vertexShader);
     // check for shader compile errors
     int success;
@@ -82,13 +127,10 @@ int main()
         std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n"
                   << infoLog << std::endl;
     }
-
     // fragment shader
-    unsigned int fragmentShader;
-    fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
+    unsigned int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+    glShaderSource(fragmentShader, 1, &fragmentShaderSource3, NULL);
     glCompileShader(fragmentShader);
-
     // check for shader compile errors
     glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
     if (!success)
@@ -97,10 +139,8 @@ int main()
         std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n"
                   << infoLog << std::endl;
     }
-
-    // link shader
-    unsigned int shaderProgram;
-    shaderProgram = glCreateProgram();
+    // link shaders
+    unsigned int shaderProgram = glCreateProgram();
     glAttachShader(shaderProgram, vertexShader);
     glAttachShader(shaderProgram, fragmentShader);
     glLinkProgram(shaderProgram);
@@ -115,57 +155,24 @@ int main()
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
 
-    // set up vertex data (and buffer(s)) and configure vertex attributes
-    // ------------------------------------------------------------------
-    float vertices[] = {
-        // positions         // colors
-        0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f,  // bottom right
-        -0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, // bottom left
-        0.0f, 0.5f, 0.0f, 0.0f, 0.0f, 1.0f    // top
+    return shaderProgram;
+}
 
-    };
-
-    unsigned int VAO, VBO;
-    glGenVertexArrays(1, &VAO);
-    glGenBuffers(1, &VBO);
-
-    // bind the Vertex Array Object first, then bind and set vertex buffer(s), and then configure vertex attributes(s).
-    glBindVertexArray(VAO);
-
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-    // position attribute
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *)0);
-    glEnableVertexAttribArray(0);
-    // color attribute
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *)(3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
-
-    // note that this is allowed, the call to glVertexAttribPointer registered VBO as the vertex attribute's bound vertex buffer object so afterwards we can safely unbind
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-    // You can unbind the VAO afterwards so other VAO calls won't accidentally modify this VAO, but this rarely happens. Modifying other
-    // VAOs requires a call to glBindVertexArray anyways so we generally don't unbind VAOs (nor VBOs) when it's not directly necessary.
-    //    glBindVertexArray(0);
-
-    // bind the VAO (it was already bound, but just to demonstrate): seeing as we only have a single VAO we can
+void render_loop(GLFWwindow *window, GLuint shader_program, GLuint VAO)
+{ // bind the VAO (it was already bound, but just to demonstrate): seeing as we only have a single VAO we can
     // just bind it beforehand before rendering the respective triangle; this is another approach.
     glBindVertexArray(VAO);
 
-    // render loop
+    glUseProgram(shader_program);
+
     while (!glfwWindowShouldClose(window))
     {
-        // input
-        //  ------------------------------------------------------------------
+        // user input
         processInput(window);
 
         // render
-        //  ------------------------------------------------------------------
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
-
-        glUseProgram(shaderProgram);
 
         // draw our first triangles
         glDrawArrays(GL_TRIANGLES, 0, 3);
@@ -175,26 +182,4 @@ int main()
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
-
-    // optional: de-allocate all resources once they've outlived their purpose:
-    // ------------------------------------------------------------------------
-    glDeleteVertexArrays(1, &VAO);
-    glDeleteBuffers(1, &VBO);
-    glDeleteProgram(shaderProgram);
-
-    // glfw: terminate, clearing all previously allocated GLFW resources.
-    // ------------------------------------------------------------------
-    glfwTerminate();
-    return 0;
-}
-
-void framebuffer_size_callback(GLFWwindow *window, int width, int height)
-{
-    glViewport(0, 0, width, height);
-}
-
-void processInput(GLFWwindow *window)
-{
-    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-        glfwSetWindowShouldClose(window, true);
 }
