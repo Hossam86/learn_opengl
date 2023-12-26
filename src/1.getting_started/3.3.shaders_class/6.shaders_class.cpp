@@ -31,10 +31,10 @@ int main()
     // register call back function to change view port when the window size changed
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
-    // build and compile our shader program usinf shader class
+    // build and compile our shader program using shader class
     // you can name your shader files however you like
-    // ------------------------------------
-    Shader ourShader("shaders/3.3.shader.vs", "shaders/3.3.shader.fs");
+    // ------------------------------------------------------------------
+    Shader ourShader("3.3.shader.vs", "3.3.shader.fs");
 
     // set up vertex data (and buffer(s)) and configure vertex attributes
     // ------------------------------------------------------------------
