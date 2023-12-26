@@ -81,6 +81,36 @@ function(create_project_from_sources chapter demo)
 	endif()
 	add_executable(${NAME} ${SOURCE})
 	target_link_libraries(${NAME} ${LIBS})
+
+    # copy shader files to build directory
+    file(GLOB SHADERS
+             "src/${chapter}/${demo}/*.vs"
+             # "src/${chapter}/${demo}/*.frag"
+             "src/${chapter}/${demo}/*.fs"
+             "src/${chapter}/${demo}/*.tcs"
+             "src/${chapter}/${demo}/*.tes"
+             "src/${chapter}/${demo}/*.gs"
+             "src/${chapter}/${demo}/*.cs"
+    )
+	# copy dlls 
+	file(GLOB DLLS "dlls/*.dll")
+    foreach(SHADER ${SHADERS})
+        if(WIN32)
+            # configure_file(${SHADER} "test")
+            add_custom_command(TARGET ${NAME} PRE_BUILD COMMAND ${CMAKE_COMMAND} -E copy ${SHADER} $<TARGET_FILE_DIR:${NAME}>)
+			add_custom_command(TARGET ${NAME} PRE_BUILD COMMAND ${CMAKE_COMMAND} -E copy ${DLLS} $<TARGET_FILE_DIR:${NAME}>)
+        elseif(UNIX AND NOT APPLE)
+            file(COPY ${SHADER} DESTINATION ${CMAKE_SOURCE_DIR}/bin/${chapter})
+        elseif(APPLE)
+            # create symbolic link for *.vs *.fs *.gs
+            get_filename_component(SHADERNAME ${SHADER} NAME)
+            makeLink(${SHADER} ${CMAKE_SOURCE_DIR}/bin/${chapter}/${SHADERNAME} ${NAME})
+        endif(WIN32)
+    endforeach(SHADER)
+    # if compiling for visual studio, also use configure file for each project (specifically to set up working directory)
+    if(MSVC)
+        configure_file(${CMAKE_SOURCE_DIR}/configuration/visualstudio.vcxproj.user.in ${CMAKE_CURRENT_BINARY_DIR}/${NAME}.vcxproj.user @ONLY)
+    endif(MSVC)
 endfunction()
 
 foreach(CHAPTER ${CHAPTERS})
