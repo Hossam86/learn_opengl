@@ -1,9 +1,7 @@
-#include <iostream>
+#include <common.h>
 #include <cmath>
-#include "common.h"
-
 // settings
-const char *TITLE = "learn opengl >> shader_uniforms";
+const char *TITLE = "learn opengl -- shader_uniforms";
 
 // shader source
 const char *vertexShaderSource2 = "#version 330 core\n"

@@ -2,6 +2,7 @@
 
 #include "glad/glad.h"
 #include <GLFW/glfw3.h>
+#include <iostream>
 
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
@@ -70,8 +71,11 @@ bool initialize_opengl_context(GLFWwindow *window)
 //  functions. We'll be using GLFW's glfwGetKey function that takes the window as input together with a key.
 //  The function returns whether this key is currently being pressed. We're creating a processInput function
 // to keep all input code organized
+
 void processInput(GLFWwindow *window)
 {
+    // process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
+    // ---------------------------------------------------------------------------------------------------------
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
 }

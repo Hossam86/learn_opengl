@@ -1,9 +1,8 @@
-#include <iostream>
+#include <common.h>
 #include <cmath>
-#include "common.h"
 
 // settings
-const char *TITLE = "learn_opengl >> shader interpolation";
+const char *TITLE = "learn_opengl -- shader interpolation";
 
 // shader source
 const char *vertexShaderSource3 = "#version 330 core\n"

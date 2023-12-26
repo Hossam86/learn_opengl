@@ -1,7 +1,5 @@
-// ref https://learnopengl.com/Getting-started/Creating-a-window
-#include <iostream>
-#include "common.h"
-const char *TITLE = "learn_opengl >> glfw_window";
+#include <common.h>
+const char *TITLE = "learn_opengl -- glfw_window";
 
 int main()
 {

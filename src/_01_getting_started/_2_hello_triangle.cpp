@@ -1,3 +1,7 @@
+#include <common.h>
+// settings
+const char *TITLE = "learn openGL -- Hello Triangle";
+
 // Everything is in 3D space, but the screen or window is a 2D array of pixels so a large part of OpenGL's
 //  work is about transforming all 3D coordinates to 2D pixels that fit on your screen
 // The process of transforming 3D coordinates to 2D pixels is managed by the graphics pipeline of OpenGL.
@@ -20,12 +24,6 @@
 // -> the graphics pipeline is quite a complex whole and contains many configurable parts. However,
 //		for almost all the cases we only have to work with the vertex and fragment shader.
 //		The geometry shader is optional and usually left to its default shader
-
-#include <iostream>
-#include "common.h"
-
-// settings
-const char *TITLE = "learn openGL >> Hello Triangle";
 
 // steps
 // ------------------------------------------------------------------
