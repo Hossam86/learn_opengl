@@ -28,7 +28,7 @@ include_directories(${CMAKE_SOURCE_DIR}/resources)
 
 # first create relevant static libraries required for other projects
 add_library(GLAD src/glad.c)
-set(LIBS ${LIBS} GLAD)
+set(LIBS ${LIBS} glfw GLAD)
 
 set (CHAPTERS
 	1.getting_started
