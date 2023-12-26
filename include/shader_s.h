@@ -40,7 +40,6 @@ public:
             // convert stream into string
             vertexCode = vShaderStream.str();
             fragmentCode = fShaderStream.str();
-            std::cout << "vertex_shader_code" << vertexCode << std::endl;
         }
         catch (std::ifstream::failure &e)
         {
