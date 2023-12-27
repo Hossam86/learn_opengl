@@ -27,6 +27,7 @@ const char *fragmentShaderSource = "#version 330 core\n"
 void framebuffer_size_callback(GLFWwindow *window, int width, int height)
 {
     // glfw: whenever the window size changed (by OS or user resize) this callback function executes
+    // width and height will be significantly larger than specified on retina displays.
     // ---------------------------------------------------------------------------------------------
     glViewport(0, 0, width, height);
 }
