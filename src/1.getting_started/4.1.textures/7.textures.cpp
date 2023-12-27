@@ -33,13 +33,14 @@ int main()
 	// ------------------------------------
 	Shader ourShader("4.1.texture.vs", "4.1.texture.fs");
 
-	// setup vertices data,  buffers and configure vertex attributes
+	// setup vertices data,
 	// ------------------------------------------------------------------
 	float *vertices;
 	unsigned int *indices;
 	unsigned int nverts, nids;
 	generate_colored_triangle_with_texture(&vertices, &nverts, &indices, &nids);
 
+	//  gpu buffers and configure vertex attributes
 	unsigned int VAO, VBO, EBO, texture;
 	copy_vertices_to_gpu(vertices, nverts, indices, nids, VAO, VBO, EBO, texture);
 
@@ -52,6 +53,8 @@ int main()
 	glDeleteBuffers(1, &VBO);
 	glDeleteBuffers(1, &EBO);
 
+	delete[] vertices;
+	delete[] indices;
 	// free window
 	glfwTerminate();
 }
