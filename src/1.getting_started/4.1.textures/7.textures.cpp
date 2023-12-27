@@ -18,7 +18,7 @@ const char *TITLE = "learn_opengl -- textures";
 // generate colored indexed triangle with texture
 void generate_colored_triangle_with_texture(float **vertices, unsigned int *nverts, unsigned int **indices, unsigned int *n_ind);
 // copy vertices and texture to GPU
-void copy_vertices_to_gpu(float *vertices, unsigned int nverts, unsigned int *indices, unsigned int nids,
+void copy_vertices_to_gpu(float **vertices, unsigned int nverts, unsigned int **indices, unsigned int nids,
 						  unsigned int VAO, unsigned int VBO, unsigned int EBO);
 
 void generate_texture(unsigned int &texture, const char *img);
@@ -61,10 +61,10 @@ int main()
 
 	//  gpu buffers and configure vertex attributes
 	unsigned int VAO, VBO, EBO, texture;
-	copy_vertices_to_gpu(vertices, nverts, indices, nids, VAO, VBO, EBO);
+	copy_vertices_to_gpu(&vertices, nverts, &indices, nids, VAO, VBO, EBO);
 
 	// create texture
-	generate_texture(texture, "resources/textures/container.jpg");
+	generate_texture(texture, "/Users/hossamsamir/Projects/learn_opengl/resources/textures/container.jpg");
 
 	// render
 	render_loop(window, ourShader, VAO, texture);
@@ -102,7 +102,7 @@ void generate_colored_triangle_with_texture(float **vertices, unsigned int *nver
 	};
 }
 
-void copy_vertices_to_gpu(float *vertices, unsigned int nverts, unsigned int *indices, unsigned int nids,
+void copy_vertices_to_gpu(float **vertices, unsigned int nverts, unsigned int **indices, unsigned int nids,
 						  unsigned int VAO, unsigned int VBO, unsigned int EBO)
 {
 	glGenVertexArrays(1, &VAO);
@@ -110,11 +110,11 @@ void copy_vertices_to_gpu(float *vertices, unsigned int nverts, unsigned int *in
 
 	glGenBuffers(1, &VBO);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, nverts * sizeof(*vertices), vertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, nverts * sizeof(**vertices), *vertices, GL_STATIC_DRAW);
 
 	glGenBuffers(1, &EBO);
 	glBindBuffer(GL_ARRAY_BUFFER, EBO);
-	glBufferData(GL_ARRAY_BUFFER, nids * sizeof(*indices), indices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, nids * sizeof(**indices), *indices, GL_STATIC_DRAW);
 
 	// configure vertex coordinates attribute
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *)0);
