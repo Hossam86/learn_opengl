@@ -16,9 +16,9 @@ const char *TITLE = "learn_opengl -- textures";
 // vertices.
 
 // generate colored indexed triangle with texture
-void generate_colored_triangle_with_texture(float **vertices, unsigned int *nverts, unsigned int **indices, unsigned int *n_ind);
+void generate_colored_triangle_with_texture(float **vertices, int *nverts, int **indices, int *n_ind);
 // copy vertices and texture to GPU
-void copy_vertices_to_gpu(float **vertices, unsigned int nverts, unsigned int **indices, unsigned int nids,
+void copy_vertices_to_gpu(float **vertices, int nverts, int **indices, int nids,
 						  unsigned int &VAO, unsigned int &VBO, unsigned int &EBO);
 
 void generate_texture(unsigned int &texture, const char *img);
@@ -53,19 +53,20 @@ int main()
 	// ------------------------------------
 	Shader ourShader("4.1.texture.vs", "4.1.texture.fs");
 
-	// setup vertices data,
+	// set up vertex data (and buffer(s)) and configure vertex attributes
 	// ------------------------------------------------------------------
 	float *vertices;
-	unsigned int *indices;
-	unsigned int nverts, nids;
+	int *indices;
+	int nverts, nids;
 	generate_colored_triangle_with_texture(&vertices, &nverts, &indices, &nids);
-
 	//  gpu buffers and configure vertex attributes
-	unsigned int VAO, VBO, EBO, texture;
+	unsigned int VAO, VBO, EBO;
 	copy_vertices_to_gpu(&vertices, nverts, &indices, nids, VAO, VBO, EBO);
-
-	// create texture
-	generate_texture(texture, "/Users/hossamsamir/Projects/learn_opengl/resources/textures/container.jpg");
+	// load and create a texture
+	// -------------------------
+	unsigned int texture;
+	glGenTextures(1, &texture);
+	generate_texture(texture, "../../resources/textures/container.jpg");
 
 	// render
 	render_loop(window, ourShader, VAO, texture);
@@ -84,8 +85,7 @@ int main()
 	glfwTerminate();
 }
 
-void generate_colored_triangle_with_texture(float **vertices, unsigned int *nverts, unsigned int **indices,
-											unsigned int *nind)
+void generate_colored_triangle_with_texture(float **vertices, int *nverts, int **indices, int *nind)
 {
 	*nverts = (4 * 3) + (4 * 3) + (4 * 2); // coordinates + colors+ textures
 	*nind = 6;							   // two triangles
@@ -97,25 +97,24 @@ void generate_colored_triangle_with_texture(float **vertices, unsigned int *nver
 		-0.5f, 0.5f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f	  // top left
 	};
 
-	*indices = new unsigned int[*nind]{
+	*indices = new int[*nind]{
 		0, 1, 3, // first triangle
 		1, 2, 3	 // second triangle
 	};
 }
 
-void copy_vertices_to_gpu(float **vertices, unsigned int nverts, unsigned int **indices, unsigned int nids,
-						  unsigned int &VAO, unsigned int &VBO, unsigned int &EBO)
+void copy_vertices_to_gpu(float **vertices, int nverts, int **indices, int nids, unsigned int &VAO, unsigned int &VBO, unsigned int &EBO)
 {
 	glGenVertexArrays(1, &VAO);
 	glBindVertexArray(VAO);
 
 	glGenBuffers(1, &VBO);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, nverts * sizeof(**vertices), *vertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, nverts * sizeof(float), *vertices, GL_STATIC_DRAW);
 
 	glGenBuffers(1, &EBO);
-	glBindBuffer(GL_ARRAY_BUFFER, EBO);
-	glBufferData(GL_ARRAY_BUFFER, nids * sizeof(**indices), *indices, GL_STATIC_DRAW);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, nids * sizeof(int), *indices, GL_STATIC_DRAW);
 
 	// configure vertex coordinates attribute
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *)0);
