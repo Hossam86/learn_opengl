@@ -18,7 +18,10 @@ const char *TITLE = "learn_opengl -- Textures";
 void generate_colored_triangle_with_texture(float **vertices, unsigned int *nverts, unsigned int **indices, unsigned int *n_ind);
 // copy vertices and texture to GPU
 void copy_vertices_to_gpu(float *vertices, unsigned int nverts, unsigned int *indices, unsigned int nids,
-						  unsigned int VAO, unsigned int VBO, unsigned int EBO, unsigned int texture);
+						  unsigned int VAO, unsigned int VBO, unsigned int EBO);
+
+void generate_texture(unsigned int &texture, const char *img);
+
 // render loop
 void render_loop(GLFWwindow *window, Shader &ourShader, unsigned int VAO, unsigned int texture);
 
@@ -42,7 +45,10 @@ int main()
 
 	//  gpu buffers and configure vertex attributes
 	unsigned int VAO, VBO, EBO, texture;
-	copy_vertices_to_gpu(vertices, nverts, indices, nids, VAO, VBO, EBO, texture);
+	copy_vertices_to_gpu(vertices, nverts, indices, nids, VAO, VBO, EBO);
+
+	// create texture
+	generate_texture(texture, "resources/textures/container.jpg");
 
 	// render
 	render_loop(window, ourShader, VAO, texture);
@@ -81,7 +87,7 @@ void generate_colored_triangle_with_texture(float **vertices, unsigned int *nver
 }
 
 void copy_vertices_to_gpu(float *vertices, unsigned int nverts, unsigned int *indices, unsigned int nids,
-						  unsigned int VAO, unsigned int VBO, unsigned int EBO, unsigned int texture)
+						  unsigned int VAO, unsigned int VBO, unsigned int EBO)
 {
 	glGenVertexArrays(1, &VAO);
 	glBindVertexArray(VAO);
@@ -106,6 +112,11 @@ void copy_vertices_to_gpu(float *vertices, unsigned int nverts, unsigned int *in
 	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *)(6 * sizeof(float)));
 	glEnableVertexAttribArray(2);
 
+	glBindVertexArray(0);
+}
+
+void generate_texture(unsigned int &texture, const char *img)
+{
 	// load and create texture
 	glGenTextures(1, &texture);
 	// all upcoming GL_TEXTURE_2D operations now have effect on this texture object
@@ -123,7 +134,7 @@ void copy_vertices_to_gpu(float *vertices, unsigned int nverts, unsigned int *in
 	int width, height, nrChannels;
 	// The FileSystem::getPath(...) is part of the GitHub repository so we can find files on any IDE/platform;
 	// replace it with your own image path.
-	unsigned char *data = stbi_load("resources/textures/container.jpg", &width, &height, &nrChannels, 0);
+	unsigned char *data = stbi_load(img, &width, &height, &nrChannels, 0);
 	if (data)
 	{
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
