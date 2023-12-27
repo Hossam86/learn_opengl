@@ -30,6 +30,13 @@ include_directories(${CMAKE_SOURCE_DIR}/resources)
 add_library(GLAD src/glad.c)
 set(LIBS ${LIBS} glfw GLAD)
 
+add_library(STB_IMAGE "src/stb_image.cpp")
+set(LIBS ${LIBS} STB_IMAGE)
+
+macro(makeLink src dest target)
+  add_custom_command(TARGET ${target} POST_BUILD COMMAND ${CMAKE_COMMAND} -E create_symlink ${src} ${dest}  DEPENDS  ${dest} COMMENT "mklink ${src} -> ${dest}")
+endmacro()
+
 set (CHAPTERS
 	1.getting_started
 	2.lighting
@@ -50,7 +57,7 @@ set(1.getting_started
 	3.1.shaders_uniform
 	3.2.shaders_interpolation
 	3.3.shaders_class
-	# 4.1.textures
+	4.1.textures
 	# 4.2.textures_combined
 	# 4.4.textures_exercise2
 	# 4.5.textures_exercise3
@@ -81,6 +88,21 @@ function(create_project_from_sources chapter demo)
 	endif()
 	add_executable(${NAME} ${SOURCE})
 	target_link_libraries(${NAME} ${LIBS})
+
+	if(MSVC)
+		target_compile_options(${NAME} PRIVATE /std:c++17 /MP)
+		target_link_options(${NAME} PUBLIC /ignore:4099)
+	endif(MSVC)
+	if(WIN32)
+		set_target_properties(${NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin/${chapter}")
+		set_target_properties(${NAME} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/bin/${chapter}/Debug")
+	elseif(UNIX AND NOT APPLE)
+		set_target_properties(${NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin/${chapter}")
+	elseif(APPLE)
+		set_target_properties(${NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin/${chapter}")
+		set_target_properties(${NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CMAKE_SOURCE_DIR}/bin/${chapter}")
+		set_target_properties(${NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_SOURCE_DIR}/bin/${chapter}")
+	endif(WIN32)
 
     # copy shader files to build directory
     file(GLOB SHADERS
