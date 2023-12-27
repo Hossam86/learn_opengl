@@ -1,7 +1,8 @@
 #include <common.h>
-#include "shader_s.h"
-#include "stb_image.h"
-const char *TITLE = "learn_opengl -- Textures";
+#include <shader_s.h>
+#include <stb_image.h>
+
+const char *TITLE = "learn_opengl -- textures";
 
 // Textures
 // We learned that to add more detail to our objects we can use colors for each vertex to create some
@@ -28,10 +29,25 @@ void render_loop(GLFWwindow *window, Shader &ourShader, unsigned int VAO, unsign
 int main()
 {
 
-	// glfw: initialize, configure and window  creation
-	//------------------------------
+	// glfw:initialization, configuration and window creation
+	//-------------------------------------------------------
 	GLFWwindow *window = create_glfw_window(TITLE, SCR_WIDTH, SCR_HEIGHT);
+	if (window == NULL)
+	{
+		std::cout << "Failed to create GlFW Window! " << std::endl;
+		glfwTerminate();
+		return -1;
+	}
+	// glad: load all opengl function pointers (We should initialize GLAD before we call any OpenGL function)
+	//-------------------------------------------------------
+	if (!initialize_opengl_context(window))
+	{
+		std::cout << "Failed to initialize GLAD" << std::endl;
+		return -1;
+	}
 
+	// register call back function to change view port when the window size changed
+	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 	// build and compile our shader program
 	// ------------------------------------
 	Shader ourShader("4.1.texture.vs", "4.1.texture.fs");
