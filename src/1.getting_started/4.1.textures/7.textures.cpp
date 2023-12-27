@@ -53,8 +53,10 @@ int main()
 	glDeleteBuffers(1, &VBO);
 	glDeleteBuffers(1, &EBO);
 
+	// free vertices data
 	delete[] vertices;
 	delete[] indices;
+
 	// free window
 	glfwTerminate();
 }
