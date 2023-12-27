@@ -19,7 +19,7 @@ const char *TITLE = "learn_opengl -- textures";
 void generate_colored_triangle_with_texture(float **vertices, unsigned int *nverts, unsigned int **indices, unsigned int *n_ind);
 // copy vertices and texture to GPU
 void copy_vertices_to_gpu(float **vertices, unsigned int nverts, unsigned int **indices, unsigned int nids,
-						  unsigned int VAO, unsigned int VBO, unsigned int EBO);
+						  unsigned int &VAO, unsigned int &VBO, unsigned int &EBO);
 
 void generate_texture(unsigned int &texture, const char *img);
 
@@ -48,6 +48,7 @@ int main()
 
 	// register call back function to change view port when the window size changed
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+
 	// build and compile our shader program
 	// ------------------------------------
 	Shader ourShader("4.1.texture.vs", "4.1.texture.fs");
@@ -103,7 +104,7 @@ void generate_colored_triangle_with_texture(float **vertices, unsigned int *nver
 }
 
 void copy_vertices_to_gpu(float **vertices, unsigned int nverts, unsigned int **indices, unsigned int nids,
-						  unsigned int VAO, unsigned int VBO, unsigned int EBO)
+						  unsigned int &VAO, unsigned int &VBO, unsigned int &EBO)
 {
 	glGenVertexArrays(1, &VAO);
 	glBindVertexArray(VAO);
@@ -125,7 +126,7 @@ void copy_vertices_to_gpu(float **vertices, unsigned int nverts, unsigned int **
 	glEnableVertexAttribArray(1);
 
 	// configure vertex texture attribute
-	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *)(6 * sizeof(float)));
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *)(6 * sizeof(float)));
 	glEnableVertexAttribArray(2);
 
 	glBindVertexArray(0);
