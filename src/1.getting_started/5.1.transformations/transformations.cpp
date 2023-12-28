@@ -12,7 +12,7 @@ void generate_indexed_triangle(float **vertices, int &nverts, int **indices, int
 
 void copy_vertices_to_gpu(float **vertices, int nverts, int **indices, int nids,
 						  uint &VBO, uint &VAO, uint &EBO);
-void generate_texture(uint texture, const char *img);
+void generate_texture(uint &texture, bool flip, const char *img);
 
 void render_loop(GLFWwindow *window, Shader &ourShader, uint VAO, uint texture1, uint texture2);
 
@@ -48,14 +48,22 @@ int main()
 
 	// load and create a texture
 	//  ------------------------------------------------------------------
-	unsigned int texture1,
-		texture2;
+	unsigned int texture1, texture2;
 	// texture 1
 	// ---------
-	generate_texture(texture1, "../../resources/textures/container.jpg");
+	// tell stb_image.h to flip loaded texture's on the y-axis.
+	generate_texture(texture1, true, "../../resources/textures/container.jpg");
 	// texture 2
 	// ---------
-	generate_texture(texture2, "../../resources/textures/awesomeface.png");
+	// note that the awesomeface.png has transparency and thus an alpha channel, so make sure to tell OpenGL
+	// the data type is of GL_RGBA
+	generate_texture(texture2, false, "../../resources/textures/awesomeface.png");
+
+	// tell opengl for each sampler to which texture unit it belongs to (only has to be done once)
+	// -------------------------------------------------------------------------------------------
+	ourShader.use();
+	ourShader.setInt("texture1", 0);
+	ourShader.setInt("texture2", 1);
 
 	// render
 	//  ------------------------------------------------------------------
@@ -93,14 +101,66 @@ void generate_indexed_triangle(float **vertices, int &nverts, int **indices, int
 	};
 }
 
+void copy_vertices_to_gpu(float **vertices, int nverts, int **indices, int nids,
+						  uint &VBO, uint &VAO, uint &EBO)
+{
+	glGenVertexArrays(1, &VAO);
+	glBindVertexArray(VAO);
+
+	glGenBuffers(1, &VBO);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glBufferData(GL_ARRAY_BUFFER, nverts * sizeof(float), *vertices, GL_STATIC_DRAW);
+
+	glGenBuffers(1, &EBO);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, nids * sizeof(int), *indices, GL_STATIC_DRAW);
+
+	// configure vertex coordinates attribute
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)0);
+	glEnableVertexAttribArray(0);
+
+	// configure vertex texture attribute
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)(3 * sizeof(float)));
+	glEnableVertexAttribArray(1);
+	glBindVertexArray(0);
+}
+
+void generate_texture(uint &texture, bool flip, const char *img)
+{
+	// load and create texture
+	glGenTextures(1, &texture);
+
+	// all upcoming GL_TEXTURE_2D operations now have effect on this texture object
+	glBindTexture(GL_TEXTURE_2D, texture);
+
+	// set the texture wrapping parameter
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+	// set texture filtering parameters
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	// load image, create texture and generate mipmaps
+	int width, height, nrChannels;
+	// The FileSystem::getPath(...) is part of the GitHub repository so we can find files on any IDE/platform;
+	// replace it with your own image path.
+	unsigned char *data = stbi_load(img, &width, &height, &nrChannels, 0);
+	if (data)
+	{
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, nrChannels == 3 ? GL_RGB : GL_RGBA, GL_UNSIGNED_BYTE, data);
+		glGenerateMipmap(GL_TEXTURE_2D);
+	}
+	else
+	{
+		std::cout << "Failed to load texture" << std::endl;
+	}
+	// free image data
+	stbi_image_free(data);
+}
+
 void render_loop(GLFWwindow *window, Shader &ourShader, uint VAO, uint texture1, uint texture2)
 {
-	// tell opengl for each sampler to which texture unit it belongs to (only has to be done once)
-	// -------------------------------------------------------------------------------------------
-	ourShader.use();
-	ourShader.setInt("texture1", 0);
-	ourShader.setInt("texture2", 1);
-
 	// render loop
 	// -----------
 	while (!glfwWindowShouldClose(window))
@@ -117,6 +177,7 @@ void render_loop(GLFWwindow *window, Shader &ourShader, uint VAO, uint texture1,
 		// bind textures on corresponding texture units
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, texture1);
+
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, texture2);
 
@@ -139,61 +200,4 @@ void render_loop(GLFWwindow *window, Shader &ourShader, uint VAO, uint texture1,
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
-}
-
-void copy_vertices_to_gpu(float **vertices, int nverts, int **indices, int nids,
-						  uint &VBO, uint &VAO, uint &EBO)
-{
-	glGenVertexArrays(1, &VAO);
-	glBindVertexArray(VAO);
-
-	glGenBuffers(1, &VBO);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(float), *vertices, GL_STATIC_DRAW);
-
-	glGenBuffers(1, &EBO);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-
-	// configure vertex coordinates attribute
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)0);
-	glEnableVertexAttribArray(0);
-
-	// configure vertex texture attribute
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)(3 * sizeof(float)));
-	glEnableVertexAttribArray(1);
-	glBindVertexArray(0);
-}
-
-void generate_texture(uint texture, const char *img)
-{
-	// load and create texture
-	glGenTextures(1, &texture);
-
-	// all upcoming GL_TEXTURE_2D operations now have effect on this texture object
-	glBindTexture(GL_TEXTURE_2D, texture);
-
-	// set the texture wrapping parameter
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-	// set texture filtering parameters
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-
-	// load image, create texture and generate mipmaps
-	int width, height, nrChannels;
-	// The FileSystem::getPath(...) is part of the GitHub repository so we can find files on any IDE/platform;
-	// replace it with your own image path.
-	unsigned char *data = stbi_load(img, &width, &height, &nrChannels, 0);
-	if (data)
-	{
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-		glGenerateMipmap(GL_TEXTURE_2D);
-	}
-	else
-	{
-		std::cout << "Failed to load texture" << std::endl;
-	}
-	// free image data
-	stbi_image_free(data);
 }
