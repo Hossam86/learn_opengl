@@ -29,14 +29,20 @@ CPMAddPackage(
 	GIT_TAG 3.3.8
 )
 
+# We manually download GLM into our source directory so the user can access
+# glm through 'glm/...'. There is no build step since this is a header only
+# library.
 CPMAddPackage(
 	NAME glm
 	GIT_REPOSITORY git@github.com:g-truc/glm.git
 	GIT_TAG 0.9.9.8
+	DOWNLOAD_ONLY True
 )
+include_directories(${glm_SOURCE_DIR}/)
+
+
 
 include_directories(${CMAKE_SOURCE_DIR}/include)
-include_directories(${CMAKE_SOURCE_DIR}/resources)
 
 # first create relevant static libraries required for other projects
 add_library(GLAD src/glad.c)
@@ -74,7 +80,7 @@ set(1.getting_started
 	# 4.4.textures_exercise2
 	# 4.5.textures_exercise3
 	# 4.6.textures_exercise4
-	# 5.1.transformations
+	5.1.transformations
 	# 5.2.transformations_exercise2
 	# 6.1.coordinate_systems
 	# 6.2.coordinate_systems_depth
