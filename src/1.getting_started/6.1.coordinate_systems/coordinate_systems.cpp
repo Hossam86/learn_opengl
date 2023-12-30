@@ -7,11 +7,14 @@
 
 // settings
 const char *TITLE = "learn_opengl -- coordinate system";
+
+// steps
 void generate_indexed_vertices(float **vertices, int &nverts, int **indices, int &nids);
 void copy_vertices_to_gpu(float **vertices, int nverts, int **indices, int nids,
 						  uint &VAO, uint &VBO, uint &EBO);
 
 void generate_texture(uint texture, const char *img, bool flip);
+void render_loop(GLFWwindow *window, Shader &shader, uint VAO, uint texture1, uint texture2);
 
 int main()
 {
@@ -64,6 +67,7 @@ int main()
 	ourShader.setInt("texture2", 1);
 
 	// Render Loop
+	render_loop(window, ourShader, VAO, texture1, texture2);
 }
 void generate_indexed_vertices(float **vertices, int &nverts, int **indices, int &nids)
 {
@@ -139,13 +143,19 @@ void generate_texture(uint texture, const char *img, bool flip)
 	stbi_image_free(data);
 }
 
-void render_loop(GLFWwindow *window, Shader &shader, uint VAO, uint texture)
+void render_loop(GLFWwindow *window, Shader &shader, uint VAO, uint texture1, uint texture2)
 {
 	// process user inputs
 	processInput(window);
 	// clear background
 	glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
+
+	// activate textures-- bind textures on corresponding texture units
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, texture1);
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, texture2);
 
 	// activate shader
 	//----------------------------------------------
