@@ -1,9 +1,13 @@
 #include <common.h>
 #include <shader_m.h>
-
+#include <stb_image.h>
 // settings
 const char *TITLE = "learn_opengl -- coordinate system";
-void generate_indexed_vertices(float **vertices, int nverts, int **indices, int nids);
+void generate_indexed_vertices(float **vertices, int &nverts, int **indices, int &nids);
+void copy_vertices_to_gpu(float **vertices, int nverts, int **indices, int nids,
+						  uint &VAO, uint &VBO, uint &EBO);
+
+void generate_texture(uint texture, const char *img, bool flip);
 
 int main()
 {
@@ -34,6 +38,19 @@ int main()
 
 	// copy vertices to gpu
 	//--------------------------------------------------------
+	uint VAO, VBO, EBO;
+	copy_vertices_to_gpu(&vertices, nverts, &indices, nids, VAO, VBO, EBO);
+
+	// generate textures
+	uint texture1, texture2;
+	// texture 1
+	// ---------
+	// tell stb_image.h to flip loaded texture's on the y-axis.
+	generate_texture(texture1, "../../resources/textures/container.jpg", true);
+	// texture 2
+	//  note that the awesomeface.png has transparency and thus an alpha channel,
+	// so make sure to tell OpenGL the data type is of GL_RGBA
+	generate_texture(texture2, "../../resources/textures/awesomeface.png", false);
 }
 
 void generate_indexed_vertices(float **vertices, int &nverts, int **indices, int &nids)
@@ -78,4 +95,34 @@ void copy_vertices_to_gpu(float **vertices, int nverts, int **indices, int nids,
 	glEnableVertexAttribArray(1);
 
 	glBindVertexArray(0);
+}
+
+void generate_texture(uint texture, const char *img, bool flip)
+{
+	glGenTextures(1, &texture);
+	glBindTexture(GL_TEXTURE_2D, texture);
+
+	// set the texture wrapping parameters
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_LINEAR);
+
+	// set texture filtering parameters
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	// load image, create texture and generate mipmaps
+
+	stbi_set_flip_vertically_on_load(flip);
+	int width, height, nrChannels;
+
+	unsigned char *data = stbi_load(img, &width, &height, &nrChannels, 0);
+	if (data)
+	{
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, (nrChannels == 4 ? GL_RGBA : GL_RGB), GL_UNSIGNED_BYTE, data);
+		glGenerateMipmap(GL_TEXTURE_2D);
+	}
+	else
+	{
+		std::cout << "Failed to load texture" << std::endl;
+	}
+	stbi_image_free(data);
 }
