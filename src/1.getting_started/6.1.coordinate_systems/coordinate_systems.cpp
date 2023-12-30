@@ -68,6 +68,18 @@ int main()
 
 	// Render Loop
 	render_loop(window, ourShader, VAO, texture1, texture2);
+
+	// optional: de-allocate all resources once they've outlived their purpose:
+	// ------------------------------------------------------------------
+	glDeleteVertexArrays(1, &VAO);
+	glDeleteBuffers(1, &VBO);
+	glDeleteBuffers(1, &EBO);
+	delete[] vertices;
+	delete[] indices;
+	// glfw: terminate, clearing all previously allocated GLFW resources.
+	// ------------------------------------------------------------------
+	glfwTerminate();
+	return 0;
 }
 void generate_indexed_vertices(float **vertices, int &nverts, int **indices, int &nids)
 {
