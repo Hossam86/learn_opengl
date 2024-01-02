@@ -3,19 +3,21 @@
 // We'll also discuss keyboard and mouse input and finish with a custom camera class.
 #include <common.h>
 #include <stb_image.h>
+#include <shader_m.h>
+
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-const *char TITLE = "learn_opengl -- camera";
+const char *TITLE = "learn_opengl -- camera";
 
 // generate cube vertices
 void generate_cube_vertices(float **vertices, int &nverts);
 
-// copy vertices attributes to gpu 
+// copy vertices attributes to gpu
 void copy_vertices_to_gpu(float **vertices, int nverts, uint &VAO, uint &VBO);
 
-// generate texture maps  
+// generate texture maps
 void generate_texture(uint &texture, const char *img, bool flip);
 
 // render loop
@@ -30,7 +32,7 @@ int main()
 		return -1;
 	}
 
-	(!initialize_opengl_context(window))
+	if (!initialize_opengl_context(window))
 	{
 		std::cout << "Failed to init OpenGL funcs" << std::endl;
 	}
@@ -41,56 +43,82 @@ int main()
 	int *indices;
 	int nverts, nids;
 
-	generate_cube_vertices(float **vertices, int &nverts);
+	generate_cube_vertices(&vertices, nverts);
+
+	uint VAO, VBO;
+	copy_vertices_to_gpu(&vertices, nverts, VAO, VBO);
+
+	// generate textures
+	uint texture1, texture2;
+	// texture 1
+	// ---------
+	// tell stb_image.h to flip loaded texture's on the y-axis.
+	generate_texture(texture1, "../../resources/textures/container.jpg", true);
+
+	// texture 2
+	//  note that the awesomeface.png has transparency and thus an alpha channel,
+	// so make sure to tell OpenGL the data type is of GL_RGBA
+	generate_texture(texture2, "../../resources/textures/awesomeface.png", false);
+
+	// tell opengl for each sampler to which texture unit it belongs to (only has to be done once)
+	// -------------------------------------------------------------------------------------------
+	Shader shader("7.1.camera.vs", "7.1.camera.fs");
+
+	// configure global opengl state
+	// -----------------------------
+	glEnable(GL_DEPTH_TEST);
+	
+	// pass projection matrix to shader (as projection matrix rarely changes there's no need to do this per frame)
+	// -----------------------------------------------------------------------------------------------------------
+	glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+	ourShader.setMat4("projection", projection);
 }
 
 void generate_cube_vertices(float **vertices, int &nverts)
 {
 	nverts = 6 * 6 * 5; // 6 faces 6 vertices each  5 attributes
-	*vertices = new float[nverts]
-	{
+	*vertices = new float[nverts]{
 		-0.5f, -0.5f, -0.5f, 0.0f, 0.0f,
-			0.5f, -0.5f, -0.5f, 1.0f, 0.0f,
-			0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
-			0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
-			-0.5f, 0.5f, -0.5f, 0.0f, 1.0f,
-			-0.5f, -0.5f, -0.5f, 0.0f, 0.0f,
+		0.5f, -0.5f, -0.5f, 1.0f, 0.0f,
+		0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
+		0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
+		-0.5f, 0.5f, -0.5f, 0.0f, 1.0f,
+		-0.5f, -0.5f, -0.5f, 0.0f, 0.0f,
 
-			-0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
-			0.5f, -0.5f, 0.5f, 1.0f, 0.0f,
-			0.5f, 0.5f, 0.5f, 1.0f, 1.0f,
-			0.5f, 0.5f, 0.5f, 1.0f, 1.0f,
-			-0.5f, 0.5f, 0.5f, 0.0f, 1.0f,
-			-0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
+		-0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
+		0.5f, -0.5f, 0.5f, 1.0f, 0.0f,
+		0.5f, 0.5f, 0.5f, 1.0f, 1.0f,
+		0.5f, 0.5f, 0.5f, 1.0f, 1.0f,
+		-0.5f, 0.5f, 0.5f, 0.0f, 1.0f,
+		-0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
 
-			-0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
-			-0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
-			-0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
-			-0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
-			-0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
-			-0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+		-0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+		-0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
+		-0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+		-0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+		-0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
+		-0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
 
-			0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
-			0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
-			0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
-			0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
-			0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
-			0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+		0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+		0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
+		0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+		0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+		0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
+		0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
 
-			-0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
-			0.5f, -0.5f, -0.5f, 1.0f, 1.0f,
-			0.5f, -0.5f, 0.5f, 1.0f, 0.0f,
-			0.5f, -0.5f, 0.5f, 1.0f, 0.0f,
-			-0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
-			-0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+		-0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+		0.5f, -0.5f, -0.5f, 1.0f, 1.0f,
+		0.5f, -0.5f, 0.5f, 1.0f, 0.0f,
+		0.5f, -0.5f, 0.5f, 1.0f, 0.0f,
+		-0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
+		-0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
 
-			-0.5f, 0.5f, -0.5f, 0.0f, 1.0f,
-			0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
-			0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
-			0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
-			-0.5f, 0.5f, 0.5f, 0.0f, 0.0f,
-			-0.5f, 0.5f, -0.5f, 0.0f, 1.0f
-	}
+		-0.5f, 0.5f, -0.5f, 0.0f, 1.0f,
+		0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
+		0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+		0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+		-0.5f, 0.5f, 0.5f, 0.0f, 0.0f,
+		-0.5f, 0.5f, -0.5f, 0.0f, 1.0f};
 }
 
 void copy_vertices_to_gpu(float **vertices, int nverts, uint &VAO, uint &VBO)
@@ -98,14 +126,14 @@ void copy_vertices_to_gpu(float **vertices, int nverts, uint &VAO, uint &VBO)
 	glGenVertexArrays(1, &VAO);
 	glBindVertexArray(VAO);
 
-	glGenBuffers(1, VBO);
+	glGenBuffers(1, &VBO);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 	glBufferData(GL_ARRAY_BUFFER, nverts * sizeof(float), *vertices, GL_STATIC_DRAW);
 
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), I(void *) 0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)0);
 	glEnableVertexAttribArray(0);
 
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), I(void *)(3 * sizeof(float)));
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)(3 * sizeof(float)));
 	glEnableVertexAttribArray(1);
 	glBindVertexArray(0);
 }
