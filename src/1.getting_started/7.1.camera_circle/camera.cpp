@@ -9,11 +9,18 @@
 
 const *char TITLE = "learn_opengl -- camera";
 
+// generate cube vertices
 void generate_cube_vertices(float **vertices, int &nverts);
+
+// copy vertices attributes to gpu 
 void copy_vertices_to_gpu(float **vertices, int nverts, uint &VAO, uint &VBO);
 
+// generate texture maps  
 void generate_texture(uint &texture, const char *img, bool flip);
+
+// render loop
 void render_loop(GLFWwindow *window, Shader &shader, uint VAO, uint texture1, uint texture2);
+
 int main()
 {
 	GLFWwindow *window = create_glfw_window(TITLE, SCR_WIDTH, SCR_HEIGHT);
