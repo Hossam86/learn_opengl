@@ -25,7 +25,7 @@ include(CPM)
 set(BUILD_TESTING OFF)
 CPMAddPackage(
 	NAME glfw
-	GIT_REPOSITORY git@github.com:glfw/glfw.git
+	GIT_REPOSITORY https://github.com/glfw/glfw.git
 	GIT_TAG 3.3.8
 )
 
@@ -34,14 +34,13 @@ CPMAddPackage(
 # library.
 CPMAddPackage(
 	NAME glm
-	GIT_REPOSITORY git@github.com:g-truc/glm.git
+	GIT_REPOSITORY https://github.com/g-truc/glm.git
 	GIT_TAG 0.9.9.8
 	DOWNLOAD_ONLY True
 )
 include_directories(${glm_SOURCE_DIR}/)
 
-
-
+# project headers
 include_directories(${CMAKE_SOURCE_DIR}/include)
 
 # first create relevant static libraries required for other projects
@@ -75,17 +74,17 @@ set(1.getting_started
 	3.1.shaders_uniform
 	3.2.shaders_interpolation
 	3.3.shaders_class
-	4.1.textures
-	4.2.textures_combined
+	# 4.1.textures
+	# 4.2.textures_combined
 	# 4.4.textures_exercise2
 	# 4.5.textures_exercise3
 	# 4.6.textures_exercise4
-	5.1.transformations
+	# 5.1.transformations
 	# 5.2.transformations_exercise2
-	6.1.coordinate_systems
+	# 6.1.coordinate_systems
 	# 6.2.coordinate_systems_depth
 	# 6.3.coordinate_systems_multiple
-	7.1.camera_circle
+	# 7.1.camera_circle
 	# 7.2.camera_keyboard_dt
 	# 7.3.camera_mouse_zoom
 	# 7.4.camera_class
@@ -141,7 +140,7 @@ set(1.getting_started
 		  if(WIN32)
 			  # configure_file(${SHADER} "test")
 			  add_custom_command(TARGET ${NAME} PRE_BUILD COMMAND ${CMAKE_COMMAND} -E copy ${SHADER} $<TARGET_FILE_DIR:${NAME}>)
-			  add_custom_command(TARGET ${NAME} PRE_BUILD COMMAND ${CMAKE_COMMAND} -E copy ${DLLS} $<TARGET_FILE_DIR:${NAME}>)
+			#   add_custom_command(TARGET ${NAME} PRE_BUILD COMMAND ${CMAKE_COMMAND} -E copy ${DLLS} $<TARGET_FILE_DIR:${NAME}>)
 		  elseif(UNIX AND NOT APPLE)
 			  file(COPY ${SHADER} DESTINATION ${CMAKE_SOURCE_DIR}/bin/${chapter})
 		  elseif(APPLE)
