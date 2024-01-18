@@ -94,7 +94,8 @@ set(1.getting_started
 
 	set(4.advanced_opengl
     1.1.depth_testing
-    # 1.2.depth_testing_view
+    1.2.depth_testing_view
+    1.3.depth_linear
     # 2.stencil_testing
     # 3.1.blending_discard
     # 3.2.blending_sort
