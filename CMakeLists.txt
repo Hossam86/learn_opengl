@@ -97,7 +97,7 @@ set(1.getting_started
     1.2.depth_testing_view
     1.3.depth_linear
     2.stencil_testing
-    # 3.1.blending_discard
+    3.1.blending_discard
     # 3.2.blending_sort
     # 5.1.framebuffers
     # 5.2.framebuffers_exercise1

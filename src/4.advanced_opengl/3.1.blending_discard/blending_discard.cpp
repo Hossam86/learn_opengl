@@ -162,10 +162,10 @@ int main() {
 
   // load textures
   // -------------
-  unsigned int cubeTexture = loadTexture("../resources/textures/marble.jpg");
-  unsigned int floorTexture = loadTexture("../resources/textures/metal.png");
+  unsigned int cubeTexture = loadTexture("../../resources/textures/marble.jpg");
+  unsigned int floorTexture = loadTexture("../../resources/textures/metal.png");
   unsigned int transparentTexture =
-      loadTexture("../resources/textures/grass.png");
+      loadTexture("../../resources/textures/grass.png");
 
   // transparent vegetation locations
   // --------------------------------
