@@ -1,8 +1,9 @@
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
-
+#include <shader.h>
 #include <iostream>
+
 const int SCR_WIDTH = 800;
 const int SCR_HEIGHT = 600;
 
@@ -42,10 +43,24 @@ int main() {
   glfwSetScrollCallback(window, mouse_scroll);
   glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
+  glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
   // make sure that glad initilzed opengl funcs
   // ------------------------------------------
+  if(!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+  {
+    std::cout <<"glad: failed to initialize opengl funcs\n";
+  }
 
-  // initilaize opengl context in glfw window
+  // configure global opengl state
   // ------------------------------------------
+  glEnable(GL_DEPTH_TEST);
+
+  // build and compile shaders 
+  // ------------------------------------------
+  Shader shader("5.1.framebuffers.vs", "5.1.framebuffers.fs");
+  Shader screen_shader("5.1.framebuffers_screen.vs", "5.1.framebuffers_screen.fs");
   
+
+
 }
