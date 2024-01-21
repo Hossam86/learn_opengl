@@ -99,7 +99,7 @@ set(1.getting_started
     2.stencil_testing
     3.1.blending_discard
     3.2.blending_sort
-    # 5.1.framebuffers
+    5.1.framebuffers
     # 5.2.framebuffers_exercise1
     # 6.1.cubemaps_skybox
     # 6.2.cubemaps_environment_mapping
