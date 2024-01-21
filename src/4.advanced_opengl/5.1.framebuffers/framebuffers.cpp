@@ -1,4 +1,5 @@
-// #include <GL/gl.h>
+// #include <GL/glext.h>
+// #include <GL/glext.h>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <iostream>
@@ -12,6 +13,9 @@ void framebuffer_size_callback(GLFWwindow *window, int width, int height);
 void mouse_callback(GLFWwindow *window, double xpos, double ypos);
 void mouse_scroll(GLFWwindow *window, double xoffset, double yoffset);
 void process_input(GLFWwindow *window);
+
+// load texture
+unsigned int loadTexture(const char *path);
 
 int main() {
 
@@ -155,5 +159,55 @@ int main() {
   glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float),
                         (void *)(2 * sizeof(float)));
   glEnableVertexAttribArray(1);
-  glBindVertexArray(0)
+  glBindVertexArray(0);
+
+  // load textures
+  //_________________________
+  unsigned int cubeTexture =
+      loadTexture("../../resources/textures/container.jpg");
+  unsigned int floorTexture = loadTexture("../../resources/textures/metal.png");
+
+  // shader configuration
+  //------------------------------
+  shader.use();
+  shader.setInt("texture1", 0);
+
+  screen_shader.use();
+  screen_shader.setInt("screenTexture", 0);
+
+  // framebuffer configuration
+  //--------------------------------
+  GLuint framebuffer;
+  glGenFramebuffers(1, &framebuffer);
+  glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+
+  // create a color attachment texture
+  GLuint textureColorbuffer;
+  glGenTextures(1, &textureColorbuffer);
+  glBindTexture(GL_TEXTURE_2D, textureColorbuffer);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RG8, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB,
+               GL_UNSIGNED_BYTE, NULL);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
+                         textureColorbuffer, 0);
+
+  // create a renderbuffer object for depth and stencil attachment (we won't be
+  // sampling these)
+  GLuint rbo;
+  glGenRenderbuffers(1, &rbo);
+  glBindBuffer(GL_RENDERBUFFER, rbo);
+  glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, SCR_WIDTH,
+                        SCR_HEIGHT); // use a single renderbuffer object for
+                                     // both a depth AND stencil buffer.
+  glFramebufferRenderbuffer(GL_RENDERBUFFER, GL_DEPTH_STENCIL_ATTACHMENT,
+                            GL_RENDERBUFFER, rbo); // now actually attach it
+
+  // now that we actually created the framebuffer and added all attachments we
+  // want to check if it is actually complete now
+  if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+    std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << std::endl;
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+  
 }
