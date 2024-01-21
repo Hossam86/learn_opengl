@@ -1,6 +1,6 @@
+#include <camera.h>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
-#include <camera.h>
 #include <iostream>
 #include <shader.h>
 #include <stb_image.h>
@@ -207,6 +207,10 @@ int main() {
     std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!"
               << std::endl;
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+  //  If we render the scene in wireframe it's obvious we've only drawn a single
+  //  quad in the default framebuffer. draw as wireframe
+  // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
   // render loop
   // -----------
