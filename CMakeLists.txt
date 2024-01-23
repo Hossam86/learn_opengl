@@ -40,13 +40,23 @@ CPMAddPackage(
 )
 include_directories(${glm_SOURCE_DIR}/)
 
+#assimp
+CPMAddPackage(
+	NAME assimp
+	GIT_REPOSITORY https://github.com/assimp/assimp.git
+	GIT_TAG v5.3.0
+)
+set(BUILD_SHARED_LIBS ON CACHE BOOL "Build shared libraries" FORCE)
+set(ASSIMP_BUILD_TESTS OFF CACHE BOOL "Assimp build tests" FORCE)
+set(ASSIMP_INSTALL OFF CACHE BOOL "Assimp install" FORCE)
+set(ASSIMP_INSTALL_PDB OFF CACHE BOOL "Assimp install PDB" FORCE)
 
 
 include_directories(${CMAKE_SOURCE_DIR}/include)
 
 # first create relevant static libraries required for other projects
 add_library(GLAD src/glad.c)
-set(LIBS ${LIBS} glfw GLAD)
+set(LIBS ${LIBS} GLAD glfw assimp)
 
 add_library(STB_IMAGE "src/stb_image.cpp")
 set(LIBS ${LIBS} STB_IMAGE)
