@@ -1,7 +1,5 @@
 
 #include "GLFW/glfw3.h"
-#include <cstddef>
-
 int
 main()
 {
@@ -15,4 +13,12 @@ main()
 #endif
 
 	GLFWwindow* window = glfwCreateWindow(800, 600, "learn_opengl:diffuse_light", NULL, NULL);
+
+	while (!glfwWindowShouldClose(window))
+	{
+
+		glfwSwapBuffers(window);
+		glfwPollEvents();
+	}
+	glfwTerminate();
 }
