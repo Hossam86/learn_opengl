@@ -1,5 +1,7 @@
-#ifndef ENTITY_H
-#define ENTITY_H
+#pragma once
+#include "glm/ext/matrix_transform.hpp"
+#include "glm/ext/quaternion_transform.hpp"
+#include "glm/fwd.hpp"
 #include <list>
 #include <memory>
 
@@ -11,12 +13,36 @@ struct Transform
 {
 	// space information
 	// local space information
-	glm::vec3 pos = {0.0f, 0.0f, 0.0f};
-	glm::vec3 eular_rot = {0.0f, 0.0f, 0.0f};
-	glm::vec3 scale = {1.0f, 1.0, 1.0f};
+	glm::vec3 m_pos = {0.0f, 0.0f, 0.0f};
+	glm::vec3 m_eular_rot = {0.0f, 0.0f, 0.0f};
+	glm::vec3 m_scale = {1.0f, 1.0, 1.0f};
 
 	// Global space information concatenate in matrix
 	glm::mat4 model_matrix = glm::mat4(1.0f);
+
+	// Dirty flag
+	bool is_dirty = true;
+
+protected:
+	glm::mat4
+	getLocalModelMatrix()
+	{
+		// get rotation matrix from euler angles
+		glm::mat4 transform_x = glm::rotate(glm::mat4(1.0), glm::radians(m_eular_rot.x), glm::vec3(1.0f, 0.0f, 0.0f));
+		glm::mat4 transform_y = glm::rotate(glm::mat4(1.0), glm::radians(m_eular_rot.y), glm::vec3(0.0f, 1.0f, 0.0f));
+		glm::mat4 transform_z = glm::rotate(glm::mat4(1.0), glm::radians(m_eular_rot.z), glm::vec3(0.0f, 0.0f, 1.0f));
+
+		// Y * X * Z
+		glm::mat4 rotation_matrix = transform_y * transform_x * transform_z;
+
+		// translation matrix
+		glm::mat4 translate_matrix = glm::translate(glm::mat4(1.0), m_pos);
+
+		glm::mat4 scale_matrix = glm::scale(glm::mat4(1.0), m_scale);
+
+		// translation * rotation * scale (also know as TRS matrix)
+		return (translate_matrix * rotation_matrix * scale_matrix);
+	}
 };
 
 class Entity
@@ -44,4 +70,3 @@ public:
 		children.back()->parent = this;
 	}
 };
-#endif
