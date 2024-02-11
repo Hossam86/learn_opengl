@@ -145,5 +145,12 @@ public:
 	{
 		if (parent)
 			transform.compute_model_matrix(parent->transform.get_model_matrix());
+		else
+			transform.compute_model_matrix();
+
+		for (auto&& child : children)
+		{
+			child->force_update_self_child();
+		}
 	}
 };
