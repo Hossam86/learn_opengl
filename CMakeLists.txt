@@ -108,26 +108,42 @@ set(1.getting_started
 )
 
 	set(4.advanced_opengl
-    1.1.depth_testing
-    1.2.depth_testing_view
-    1.3.depth_linear
-    2.stencil_testing
-    3.1.blending_discard
-    3.2.blending_sort
-    5.1.framebuffers
-    # 5.2.framebuffers_exercise1
-    # 6.1.cubemaps_skybox
-    # 6.2.cubemaps_environment_mapping
-    # 8.advanced_glsl_ubo
-    # 9.1.geometry_shader_houses
-    # 9.2.geometry_shader_exploding
-    # 9.3.geometry_shader_normals
-    # 10.1.instancing_quads
-    # 10.2.asteroids
-    # 10.3.asteroids_instanced
-    # 11.1.anti_aliasing_msaa
-    # 11.2.anti_aliasing_offscreen
+	1.1.depth_testing
+	1.2.depth_testing_view
+	1.3.depth_linear
+	2.stencil_testing
+	3.1.blending_discard
+	3.2.blending_sort
+	5.1.framebuffers
+	# 5.2.framebuffers_exercise1
+	# 6.1.cubemaps_skybox
+	# 6.2.cubemaps_environment_mapping
+	# 8.advanced_glsl_ubo
+	# 9.1.geometry_shader_houses
+	# 9.2.geometry_shader_exploding
+	# 9.3.geometry_shader_normals
+	# 10.1.instancing_quads
+	# 10.2.asteroids
+	# 10.3.asteroids_instanced
+	# 11.1.anti_aliasing_msaa
+	# 11.2.anti_aliasing_offscreen
+	)
+
+	set(GUEST_ARTICLES
+	# 8.guest/2020/oit
+	# 8.guest/2020/skeletal_animation
+	8.guest/2021/1.scene/1.scene_graph
+	# 8.guest/2021/1.scene/2.frustum_culling
+	# 8.guest/2021/2.csm
+	# 8.guest/2021/3.tessellation/terrain_gpu_dist
+	# 8.guest/2021/3.tessellation/terrain_cpu_src
+	# 8.guest/2021/4.dsa
+	# 8.guest/2022/5.computeshader_helloworld
+	# 8.guest/2022/6.physically_based_bloom
+	# 8.guest/2022/7.area_lights/1.area_light
+	# 8.guest/2022/7.area_lights/2.multiple_area_lights
 )
+
 
   function(create_project_from_sources chapter demo)
 	  file(GLOB SOURCE
@@ -200,3 +216,6 @@ set(1.getting_started
 			create_project_from_sources(${CHAPTER} ${DEMO})
 		endforeach(DEMO)
 	endforeach(CHAPTER)
+	foreach(GUEST_ARTICLE ${GUEST_ARTICLES})
+	create_project_from_sources(${GUEST_ARTICLE} "")
+endforeach(GUEST_ARTICLE)
