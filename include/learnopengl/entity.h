@@ -100,6 +100,11 @@ public:
 	}
 };
 
+struct Plane{
+	glm::vec3 Normal;
+
+};
+
 class Entity
 {
 public:
