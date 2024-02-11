@@ -1,13 +1,9 @@
 #pragma once
-#include "glm/ext/matrix_transform.hpp"
-#include "glm/ext/quaternion_transform.hpp"
-#include "glm/fwd.hpp"
 #include <list>
 #include <memory>
 
-#include <learnopengl/model.h>
-
 #include <glm/glm.hpp>
+#include <learnopengl/model.h>
 
 struct Transform
 {
@@ -25,7 +21,7 @@ struct Transform
 
 protected:
 	glm::mat4
-	getLocalModelMatrix()
+	get_local_model_matrix()
 	{
 		// get rotation matrix from euler angles
 		glm::mat4 transform_x = glm::rotate(glm::mat4(1.0), glm::radians(m_eular_rot.x), glm::vec3(1.0f, 0.0f, 0.0f));
@@ -42,6 +38,65 @@ protected:
 
 		// translation * rotation * scale (also know as TRS matrix)
 		return (translate_matrix * rotation_matrix * scale_matrix);
+	}
+
+public:
+	void
+	compute_model_matrix()
+	{
+		model_matrix = get_local_model_matrix();
+		is_dirty = false;
+	}
+
+	void
+	compute_model_matrix(const glm::mat4& parent_model_matrix)
+	{
+		model_matrix = parent_model_matrix * get_local_model_matrix();
+		is_dirty = false;
+	}
+
+	void
+	set_local_position(const glm::vec3& pos)
+	{
+		m_pos = pos;
+		is_dirty = true;
+	}
+
+	void
+	set_local_rotation(const glm::vec3& rot)
+	{
+		m_eular_rot = rot;
+		is_dirty = true;
+	}
+	void
+	set_local_scale(const glm::vec3& scale)
+	{
+		m_scale = scale;
+		is_dirty = true;
+	}
+
+	const glm::vec3&
+	get_global_position() const
+	{
+		return model_matrix[3];
+	}
+
+	const glm::vec3&
+	get_local_position() const
+	{
+		return m_pos;
+	}
+
+	const glm::vec3&
+	get_local_rotation() const
+	{
+		return m_eular_rot;
+	}
+
+	const glm::mat4&
+	get_model_matrix() const
+	{
+		return model_matrix;
 	}
 };
 
@@ -68,5 +123,27 @@ public:
 	{
 		children.emplace_back(std::make_unique<Entity>(args...));
 		children.back()->parent = this;
+	}
+
+	// update transform if it changed
+	void
+	update_self_and_child()
+	{
+		if (transform.is_dirty)
+		{
+			force_update_self_child();
+		}
+
+		for (auto&& child : children)
+		{
+			child->update_self_and_child();
+		}
+	}
+
+	void
+	force_update_self_child()
+	{
+		if (parent)
+			transform.compute_model_matrix(parent->transform.get_model_matrix());
 	}
 };
