@@ -7,6 +7,15 @@ float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
 bool firstMouse = true;
 
+void
+processKeyboardInputs(GLFWwindow* window);
+
+void
+mouseCursorCallback(GLFWwindow* window, double xpos, double ypos);
+
+void
+framebuffer_size_callback(GLFWwindow* window, int width, int height);
+
 int
 main()
 {
@@ -22,6 +31,11 @@ main()
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif
 	GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, , nullptr, nullptr);
-    
-    
+
+	// register window callbacks
+	//--------------------------
+	glfwMakeContextCurrent(window);
+	glfwSetCursorPosCallback(window, mouseCursorCallback);
+	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+
 }
