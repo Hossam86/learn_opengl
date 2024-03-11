@@ -1,5 +1,6 @@
 #include <iostream>
 #include <GLFW/glfw3.h>
+#include <glad/glad.h>
 
 unsigned int SCR_WIDTH = 800;
 unsigned int SCR_HEIGHT = 600;
@@ -37,5 +38,13 @@ main()
 	glfwMakeContextCurrent(window);
 	glfwSetCursorPosCallback(window, mouseCursorCallback);
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+
+	// glad: load all opengl functions pointers
+	// ---------------------------------------
+	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+	{
+		std::cout << "Failed to initialize GLAD" << std::endl;
+		return -1;
+	}
 
 }
