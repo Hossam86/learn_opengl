@@ -1,8 +1,8 @@
-#include <common.h>
+#include <learnopengl/common.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include <shader_m.h>
+#include <learnopengl/shader_m.h>
 #include <stb_image.h>
 
 // settings

@@ -1,4 +1,4 @@
-#include <common.h>
+#include <learnopengl/common.h>
 const char *TITLE = "learn_opengl -- glfw_window";
 
 int main() {

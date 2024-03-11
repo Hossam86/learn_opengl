@@ -1,5 +1,5 @@
-#include <common.h>
-#include <shader_s.h>
+#include <learnopengl/common.h>
+#include <learnopengl/shader_s.h>
 #include <stb_image.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>

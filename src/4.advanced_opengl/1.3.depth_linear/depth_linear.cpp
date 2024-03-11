@@ -37,10 +37,10 @@
 // is that you shouldn't write to the fragment's depth value. If a fragment
 // shader would write to its depth value, early depth testing is impossible;
 // OpenGL won't be able to figure out the depth value beforehand.
-#include <camera.h>
+#include <learnopengl/camera.h>
 #include <GLFW/glfw3.h>
 #include <cstddef>
-#include <shader.h>
+#include <learnopengl/shader.h>
 #include <stb_image.h>
 
 // window sizing

@@ -3,7 +3,7 @@
 #include <stb_image.h>
 
 // #include <learnopengl/filesystem.h>
-#include <shader_s.h>
+#include <learnopengl/shader_s.h>
 
 #include <iostream>
 

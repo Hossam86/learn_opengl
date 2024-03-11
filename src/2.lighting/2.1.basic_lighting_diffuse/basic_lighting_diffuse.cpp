@@ -2,8 +2,8 @@
 #include <glad/glad.h>
 #include "GLFW/glfw3.h"
 #include <iostream>
-#include <shader.h>
-#include <camera.h>
+#include <learnopengl/shader.h>
+#include <learnopengl/camera.h>
 
 unsigned int SCR_WIDTH = 800;
 unsigned int SCR_HEIGHT = 600;

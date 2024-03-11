@@ -1,5 +1,5 @@
 #include <cmath>
-#include <common.h>
+#include <learnopengl/common.h>
 // settings
 const char *TITLE = "learn opengl -- shader_uniforms";
 

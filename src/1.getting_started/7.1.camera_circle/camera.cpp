@@ -2,8 +2,8 @@
 // discuss a fly style camera that allows you to freely move around in a 3D
 // scene. We'll also discuss keyboard and mouse input and finish with a custom
 // camera class.
-#include <common.h>
-#include <shader_m.h>
+#include <learnopengl/common.h>
+#include <learnopengl/shader_m.h>
 #include <stb_image.h>
 
 #include <glm/glm.hpp>

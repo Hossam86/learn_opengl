@@ -1,4 +1,4 @@
-#include <common.h>
+#include <learnopengl/common.h>
 // settings
 const char *TITLE = "learn_opengl >> indexed_triangle";
 
