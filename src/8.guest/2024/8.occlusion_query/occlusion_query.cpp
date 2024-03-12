@@ -126,10 +126,10 @@ main()
 
 		// be sure to activate shader when settings uniforms/ drawing objects
 		cubeShader.use();
-	
 
 		// view/ projectoin trmasformation
-		glm::mat4 projection= glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH/SCR_HEIGHT, 0.1f, 100.0f);
+		// glm::mat4 projection= glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH/SCR_HEIGHT, 0.1f, 100.0f);
+		glm::mat4 projection= glm::ortho(-1.0f, 2.0f, -1.5f, 1.5f, 0.1f, 100.0f);
 		glm::mat4 view = camera.GetViewMatrix();
 		cubeShader.setMat4("projection", projection);
 		cubeShader.setMat4("view", view);
@@ -196,7 +196,6 @@ mouseCursorCallback(GLFWwindow* window, double xposIn, double yposIn)
 	lastX = xpos;
 	lastY = ypos;
 
-	std::cout << "xoffset: " << xoffset << "\n";
 	camera.ProcessMouseMovement(xoffset, yoffset);
 }
 
