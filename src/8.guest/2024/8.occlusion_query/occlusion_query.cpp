@@ -107,16 +107,65 @@ main()
 	glEnable(GL_DEPTH_TEST);
 
 	// process shaders
-	Shader cubeShader("8.occlusion_tesh.vs", "8.occlusion_tesh.fs");
+	Shader cubeShader("8.occlusion_test.vs", "8.occlusion_test.fs");
 
 	while (!glfwWindowShouldClose(window))
 	{
 		// per frame time logic
 		// ------------------------
 		float currentFrame = static_cast<float>(glfwGetTime());
-		deltaTime= currentFrame- lastFrame;
+		deltaTime= currentFrame - lastFrame;
 		lastFrame= currentFrame;
+
+		// input 
+		processKeyboardInputs(window);
+		
+		// render 
+		glClearColor(0.1f, 0.1f, 0.1f, 0.1f);
+		glClear(GL_COLOR_BUFFER_BIT| GL_DEPTH_BUFFER_BIT);
+
+		// be sure to activate shader when settings uniforms/ drawing objects
+		cubeShader.use();
+	
+
+		// view/ projectoin trmasformation
+		glm::mat4 projection= glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH/SCR_HEIGHT, 0.1f, 100.0f);
+		glm::mat4 view = camera.GetViewMatrix();
+		cubeShader.setMat4("projection", projection);
+		cubeShader.setMat4("view", view);
+
+		// world transformation cube 1
+		glm::mat4 model = glm::mat4(1.0f);
+		cubeShader.setMat4("model", model);
+		cubeShader.setVec4("objectColor", glm::vec4(1.0f));
+
+		// render the cube 
+		glBindVertexArray(cube1VAO);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+		// transform the second cube 
+		model= glm::translate(model, glm::vec3(1.2f, 0.0,0.0));
+		cubeShader.setMat4("model", model);
+		cubeShader.setVec4("objectColor", glm::vec4(1.0f,0.0,0.0, 1.0));
+		glDrawArrays(GL_TRIANGLES,0, 36);
+
+		// swap buffers and listen to events 
+		glfwSwapBuffers(window);
+		glfwPollEvents();
+		
 	}
+
+		// optional: de- allocate all resouces once they have outlives thier pupose:
+		//--------------------------------------------------------------------------
+		glDeleteVertexArrays(1, &cube1VAO);
+		glDeleteVertexArrays(1, &cube2VAO);
+		glDeleteBuffers(1, &VBO);
+
+		// glfw: terminate, clearing all previously allocated GLFW resources 
+		//-------------------------------------------------------------------
+		glfwTerminate();
+		return 0;
+	
 }
 
 void
