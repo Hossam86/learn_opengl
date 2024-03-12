@@ -105,67 +105,95 @@ main()
 	// configure global opengl state
 	// -----------------------------
 	glEnable(GL_DEPTH_TEST);
+	glDepthFunc(GL_LESS);
 
 	// process shaders
 	Shader cubeShader("8.occlusion_test.vs", "8.occlusion_test.fs");
 
+	GLuint queryID;
 	while (!glfwWindowShouldClose(window))
 	{
 		// per frame time logic
 		// ------------------------
 		float currentFrame = static_cast<float>(glfwGetTime());
-		deltaTime= currentFrame - lastFrame;
-		lastFrame= currentFrame;
+		deltaTime = currentFrame - lastFrame;
+		lastFrame = currentFrame;
 
-		// input 
+		// input
 		processKeyboardInputs(window);
-		
-		// render 
+
+		// render
 		glClearColor(0.1f, 0.1f, 0.1f, 0.1f);
-		glClear(GL_COLOR_BUFFER_BIT| GL_DEPTH_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		// be sure to activate shader when settings uniforms/ drawing objects
 		cubeShader.use();
 
 		// view/ projectoin trmasformation
 		// glm::mat4 projection= glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH/SCR_HEIGHT, 0.1f, 100.0f);
-		glm::mat4 projection= glm::ortho(-1.0f, 2.0f, -1.5f, 1.5f, 0.1f, 100.0f);
+		glm::mat4 projection = glm::ortho(-1.0f, 2.0f, -1.5f, 1.5f, 0.1f, 100.0f);
 		glm::mat4 view = camera.GetViewMatrix();
 		cubeShader.setMat4("projection", projection);
 		cubeShader.setMat4("view", view);
 
 		// world transformation cube 1
 		glm::mat4 model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(0.0f, 0.0, 1.2));
+		cubeShader.setMat4("model", model);
+		cubeShader.setVec4("objectColor", glm::vec4(1.0f, 0.0, 0.0, 1.0));
+
+		// render the cube
+		glBindVertexArray(cube1VAO);
+
+		GLint samplePassed, aQueryFinished(0);
+		glGenQueries(1, &queryID);
+
+		glBeginQuery(GL_SAMPLES_PASSED, queryID);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+		glEndQuery(GL_SAMPLES_PASSED);
+
+		while (aQueryFinished == 0)
+		{
+			glGetQueryObjectiv(queryID, GL_QUERY_RESULT_AVAILABLE, &aQueryFinished);
+			std::cout << "aQueryFinished:" << aQueryFinished << "\n";
+		}
+		glGetQueryObjectiv(queryID, GL_QUERY_RESULT, &samplePassed);
+
+		std::cout << "sample passed cube 1:" << samplePassed << std::endl;
+
+		// transform the second cube
+		model = glm::mat4(1.0f);
 		cubeShader.setMat4("model", model);
 		cubeShader.setVec4("objectColor", glm::vec4(1.0f));
 
-		// render the cube 
-		glBindVertexArray(cube1VAO);
+		glBeginQuery(GL_SAMPLES_PASSED, queryID);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
+		glEndQuery(GL_SAMPLES_PASSED);
 
-		// transform the second cube 
-		model= glm::translate(model, glm::vec3(1.2f, 0.0,0.0));
-		cubeShader.setMat4("model", model);
-		cubeShader.setVec4("objectColor", glm::vec4(1.0f,0.0,0.0, 1.0));
-		glDrawArrays(GL_TRIANGLES,0, 36);
+		aQueryFinished = 0;
+		while (aQueryFinished == 0)
+		{
+			glGetQueryObjectiv(queryID, GL_QUERY_RESULT_AVAILABLE, &aQueryFinished);
+			std::cout << "aQueryFinished:" << aQueryFinished << "\n";
+		}
+		glGetQueryObjectiv(queryID, GL_QUERY_RESULT, &samplePassed);
+		std::cout << "sample passed cube 2:" << samplePassed << std::endl;
 
-		// swap buffers and listen to events 
+		// swap buffers and listen to events
 		glfwSwapBuffers(window);
 		glfwPollEvents();
-		
 	}
 
-		// optional: de- allocate all resouces once they have outlives thier pupose:
-		//--------------------------------------------------------------------------
-		glDeleteVertexArrays(1, &cube1VAO);
-		glDeleteVertexArrays(1, &cube2VAO);
-		glDeleteBuffers(1, &VBO);
-
-		// glfw: terminate, clearing all previously allocated GLFW resources 
-		//-------------------------------------------------------------------
-		glfwTerminate();
-		return 0;
-	
+	// optional: de- allocate all resouces once they have outlives thier pupose:
+	//--------------------------------------------------------------------------
+	glDeleteVertexArrays(1, &cube1VAO);
+	glDeleteVertexArrays(1, &cube2VAO);
+	glDeleteBuffers(1, &VBO);
+	glDeleteQueries(1, &queryID);
+	// glfw: terminate, clearing all previously allocated GLFW resources
+	//-------------------------------------------------------------------
+	glfwTerminate();
+	return 0;
 }
 
 void
