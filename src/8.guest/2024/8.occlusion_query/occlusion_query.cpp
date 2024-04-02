@@ -126,6 +126,8 @@ main()
 		glClearColor(0.1f, 0.1f, 0.1f, 0.1f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+		// glDepthMask(GL_FALSE);
+
 		// be sure to activate shader when settings uniforms/ drawing objects
 		cubeShader.use();
 
