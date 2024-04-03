@@ -170,6 +170,7 @@ main()
 	if (window == NULL)
 	{
 		std::cout << "glfw: Failed to create window \n";
+		return -1;
 	}
 
 	// call back functions
@@ -178,9 +179,23 @@ main()
 	// tell GLFW to capture our mouse
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
+	//! glad: load all opengl function pointers
+	//-----------------------------------------
+	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+	{
+		std::cout << "glad: Failed to load opengl functions\n";
+		return -1;
+	}
+
 	while (glfwWindowShouldClose(window))
 	{
+		// glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
+		// -------------------------------------------------------------------------------
+		glfwSwapBuffers(window);
+		glfwPollEvents();
 	}
+	glfwTerminate();
+	return 0;
 }
 // process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
 // ---------------------------------------------------------------------------------------------------------
@@ -200,5 +215,5 @@ framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
 	// make sure the viewport matches the new window dimensions; note that width and
 	// height will be significantly larger than specified on retina displays.
-	glViewport(0, 0, width, height)
+	glViewport(0, 0, width, height);
 }
