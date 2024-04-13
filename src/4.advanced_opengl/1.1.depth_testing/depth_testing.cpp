@@ -43,6 +43,9 @@
 #include <learnopengl/shader.h>
 #include <learnopengl/camera.h>
 
+// tetxure loading
+#include <stb_image.h>
+
 #include <iostream>
 // window size
 unsigned int WINDOW_WIDTH = 800;
@@ -50,10 +53,14 @@ unsigned int WINDOW_HEIGHT = 600;
 
 // process user inputs
 void
-process_inputs(GLFWwindow* window);
+process_input(GLFWwindow* window);
 
 // camera
 Camera camera;
+
+// texture loading
+unsigned int
+load_texture(const char* path);
 
 int
 main()
@@ -70,11 +77,11 @@ main()
 	// where all functionality deprecated in the requested version of OpenGL is
 	// removed. This must only be used if the requested OpenGL version is 3.0 or
 	// above. If OpenGL ES is requested, this hint is ignored.
-	glfwWindowHint(GLFW_OPENGL_COMPAT_PROFILE, true)
+	glfwWindowHint(GLFW_OPENGL_COMPAT_PROFILE, true);
 #endif
 
-		// create GLFW window
-		GLFWwindow* window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "learn_opengl", nullptr, nullptr);
+	// create GLFW window
+	GLFWwindow* window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "learn_opengl>>depth_test", nullptr, nullptr);
 
 	if (window == nullptr)
 	{
@@ -96,7 +103,6 @@ main()
 	glDepthFunc(GL_ALWAYS); //  always pass the depth test (same effect as
 							//  glDisable(GL_DEPTH_TEST))
 
-	// geomtry
 
 	// set up vertex data (and buffer(s)) and configure vertex attributes
 	// ------------------------------------------------------------------
@@ -134,61 +140,116 @@ main()
 	glGenBuffers(1, &cubeVBO);
 	glBindVertexArray(cubeVAO);
 	glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(cubeVertices), &cubeVertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(cubeVertices), cubeVertices, GL_STATIC_DRAW);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+	glEnableVertexAttribArray(1);
+	glBindVertexArray(0);	
+
+	// upload geomtry data to gpu -- plane
+	GLuint planeVAO, planeVBO;
+	glGenVertexArrays(1, &planeVAO);
+	glBindVertexArray(planeVAO);
+	glGenBuffers(1, &planeVBO);
+	glBindBuffer(GL_ARRAY_BUFFER, planeVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(planeVertices), planeVertices, GL_STATIC_DRAW);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
 	glEnableVertexAttribArray(1);
 	glBindVertexArray(0);
 
-	// upload geomtry data to gpu -- plane
-	GLuint planeVAO, PlaneVBO;
-	glGenVertexArrays(1, &planeVAO);
-	glBindVertexArray(planeVAO);
-	glGenBuffers(1, &PlaneVBO);
-	glBindBuffer(GL_ARRAY_BUFFER, PlaneVBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(planeVertices), planeVertices, GL_STATIC_DRAW);
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
-	glEnableVertexAttribArray(1);
-	glBindVertexArray(0);
-
-	// shaders
+	// Shaders
 	Shader shader("1.3.depth_testing.vs", "1.3.depth_testing.fs");
+	shader.use();
+	shader.setInt("texture1", 0);
+
+	// Textures
+	unsigned int cube_texture = load_texture("../../resources/textures/marble.jpg");
 
 	while (!glfwWindowShouldClose(window))
 	{
-		// process user inputs
-		process_inputs(window);
+	    // input
+        // -----
+        process_input(window);
 
-		// background color
-		glClearColor(0.1, 0.1, 0.1, 0.5);
-		// clear color and depth buffers
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		shader.use();
+        // render
+        // ------
+        glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		glm::mat4 model = glm::mat4(1.0);
-		glm::mat4 view = camera.GetViewMatrix();
-		glm::mat4 projection =
-			glm::perspective(glm::radians(camera.Zoom), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 100.0f);
-		shader.setMat4("model", model);
-		shader.setMat4("view", view);
-		shader.setMat4("projection", projection);
-
-		// draw
-		glDrawArrays(GL_TRIANGLES, 0, 36);
-
+        shader.use();
+        glm::mat4 model = glm::mat4(1.0f);
+        glm::mat4 view = camera.GetViewMatrix();
+        glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 100.0f);
+        shader.setMat4("view", view);
+        shader.setMat4("projection", projection);
+        // cubes
+        glBindVertexArray(cubeVAO);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, cube_texture); 	
+        model = glm::translate(model, glm::vec3(-1.0f, 0.0f, -1.0f));
+        shader.setMat4("model", model);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
 		// window
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
+
+	// release GPU resources
+	glDeleteVertexArrays(1, &cubeVAO);
+	glDeleteVertexArrays(1, &planeVAO);
+	glDeleteBuffers(1, &cubeVBO);
+	glDeleteBuffers(1, &planeVBO);
 
 	// terminate glfw resource
 	glfwTerminate();
 }
 
 void
-process_inputs(GLFWwindow* window)
+process_input(GLFWwindow* window)
 {
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
+}
+
+// utility function for loading a 2D texture from file
+// ---------------------------------------------------
+unsigned int
+load_texture(const char* path)
+{
+	GLuint texture;
+	glGenTextures(1, &texture);
+	glBindTexture(GL_TEXTURE_2D, texture);
+	int width, height;
+	int nrComp;
+	unsigned char* data = stbi_load(path, &width, &height, &nrComp, 0);
+	if (data)
+	{
+		GLenum format;
+		if (nrComp == 1)
+			format = GL_RED;
+		if (nrComp == 3)
+			format = GL_RGB;
+		if (nrComp == 4)
+			format = GL_RGBA;
+
+		glBindTexture(GL_TEXTURE_2D, texture);
+		glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+		glGenerateMipmap(GL_TEXTURE_BINDING_2D);
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+		stbi_image_free(data);
+	}
+	else
+	{
+		std::cout << "Texture failed to load image from path!\n";
+		stbi_image_free(data);
+	}
+	return texture;
 }
