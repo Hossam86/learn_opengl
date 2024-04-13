@@ -40,8 +40,10 @@
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
-#include <iostream>
+#include <learnopengl/shader.h>
+#include <learnopengl/camera.h>
 
+#include <iostream>
 // window size
 unsigned int WINDOW_WIDTH = 800;
 unsigned int WINDOW_HEIGHT = 600;
@@ -49,6 +51,9 @@ unsigned int WINDOW_HEIGHT = 600;
 // process user inputs
 void
 process_inputs(GLFWwindow* window);
+
+// camera
+Camera camera;
 
 int
 main()
@@ -136,7 +141,7 @@ main()
 	glEnableVertexAttribArray(1);
 	glBindVertexArray(0);
 
-	// upload geomtry dta to gpu -- plane
+	// upload geomtry data to gpu -- plane
 	GLuint planeVAO, PlaneVBO;
 	glGenVertexArrays(1, &planeVAO);
 	glBindVertexArray(planeVAO);
@@ -147,6 +152,9 @@ main()
 	glEnableVertexAttribArray(1);
 	glBindVertexArray(0);
 
+	// shaders
+	Shader shader("1.3.depth_testing.vs", "1.3.depth_testing.fs");
+
 	while (!glfwWindowShouldClose(window))
 	{
 		// process user inputs
@@ -155,7 +163,19 @@ main()
 		// background color
 		glClearColor(0.1, 0.1, 0.1, 0.5);
 		// clear color and depth buffers
-		glClear(GL_COLOR_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		shader.use();
+
+		glm::mat4 model = glm::mat4(1.0);
+		glm::mat4 view = camera.GetViewMatrix();
+		glm::mat4 projection =
+			glm::perspective(glm::radians(camera.Zoom), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 100.0f);
+		shader.setMat4("model", model);
+		shader.setMat4("view", view);
+		shader.setMat4("projection", projection);
+
+		// draw
+		glDrawArrays(GL_TRIANGLES, 0, 36);
 
 		// window
 		glfwSwapBuffers(window);

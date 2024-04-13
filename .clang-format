@@ -6,7 +6,7 @@ NamespaceIndentation: All
 AlwaysBreakAfterReturnType: All
 BinPackArguments: false
 BinPackParameters: false
-SortIncludes: false
+SortIncludes: Never
 SortUsingDeclarations: true
 SpaceAfterCStyleCast: false
 SpaceAfterTemplateKeyword: false
@@ -39,3 +39,4 @@ StatementMacros:
   - mn_unreachable_msg
 TabWidth: 4
 UseTab: Always
+IncludeBlocks: Preserve
