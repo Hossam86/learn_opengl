@@ -1,17 +1,25 @@
+#include <iostream>
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
-#include <iostream>
+
+#include <stb_image.h>
+#include <learnopengl/camera.h>
+#include <learnopengl/shader.h>
 
 // window size
 unsigned int WINDOW_WIDTH = 800;
 unsigned int WINDOW_HEIGHT = 600;
+// camera
+Camera camera;
 
 // callback functions
 
-// inputs
 void
 process_input(GLFWwindow* window);
+
+unsigned int
+load_textures(const char* path);
 
 int
 main()
@@ -92,7 +100,6 @@ main()
 	// CUBE -- attributes -- vertices
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
-
 	// CUBE -- attributes -- texture coordinates
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
 	glEnableVertexAttribArray(1);
@@ -107,11 +114,19 @@ main()
 	// FLOOR -- attributes -- vertices
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
-
 	// FLOOR -- attributes -- texture coordinates
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
 	glEnableVertexAttribArray(1);
 
+	// step3 -- Load and compile shaders
+	//----------------------------------
+	Shader shader("stencil_testing.vs", "stencil_testing.fs");
+
+	// step4 -- Load and bind textures
+	//--------------------------------
+	unsigned int cubeTexture = load_textures("../../resources/textures.marble.jpg");
+	unsigned int floorTexture = load_textures("../../resources/textures.metal.png");
+	// unsigned int cube_texture
 	while (!glfwWindowShouldClose(window))
 	{
 		// process inputs
@@ -129,4 +144,40 @@ process_input(GLFWwindow* window)
 {
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
+}
+
+unsigned int
+load_textures(const char* path)
+{
+	unsigned int texture;
+	glGenTextures(1, &texture);
+
+	int width, height, ncrComp;
+	unsigned char* data = stbi_load(path, &width, &height, &ncrComp, 0);
+	GLenum format;
+	if (data)
+	{
+		if (ncrComp == 1)
+			format = GL_RED;
+		else if (ncrComp == 3)
+			format = GL_RGB;
+		else if (ncrComp == 4)
+			format = GL_RGBA;
+
+		glBindTexture(GL_TEXTURE_2D, texture);
+		glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+		glGenerateMipmap(GL_TEXTURE_2D);
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+		stbi_image_free(data);
+	}
+	else
+	{
+		std::cout << "stb: Failed to load image file!\n";
+		stbi_image_free(data);
+	}
 }
