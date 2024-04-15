@@ -19,7 +19,7 @@ void
 process_input(GLFWwindow* window);
 
 unsigned int
-load_textures(const char* path);
+load_texture(const char* path);
 
 int
 main()
@@ -120,18 +120,41 @@ main()
 
 	// step3 -- Load and compile shaders
 	//----------------------------------
-	Shader shader("stencil_testing.vs", "stencil_testing.fs");
+	Shader shader("2.stencil_testing.vs", "2.stencil_testing.fs");
+	shader.use();
 
 	// step4 -- Load and bind textures
-	//--------------------------------
-	unsigned int cubeTexture = load_textures("../../resources/textures.marble.jpg");
-	unsigned int floorTexture = load_textures("../../resources/textures.metal.png");
+	//--------------------------------codec
+	// load texttures
+	unsigned int cubeTexture = load_texture("../../resources/textures/marble.jpg");
+	unsigned int floorTexture = load_texture("../../resources/textures/metal.png");
 	// unsigned int cube_texture
 	while (!glfwWindowShouldClose(window))
 	{
 		// process inputs
 		//---------------
 		process_input(window);
+
+		// prepare frame
+		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		// set model, view, projection
+		shader.use();
+		glm::mat4 model = glm::mat4(1.0);
+		glm::mat4 view = camera.GetViewMatrix();
+		glm::mat4 projection =
+			glm::perspective(glm::radians(camera.Zoom), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 100.f);
+
+		shader.setMat4("model", model);
+		shader.setMat4("view", view);
+		shader.setMat4("projection", projection);
+		// Bind VAOs
+		glBindVertexArray(cubeVAO);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, cubeTexture);
+		// DRAW Triangles
+		glDrawArrays(GL_TRIANGLES, 0, 36);
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
@@ -147,7 +170,7 @@ process_input(GLFWwindow* window)
 }
 
 unsigned int
-load_textures(const char* path)
+load_texture(const char* path)
 {
 	unsigned int texture;
 	glGenTextures(1, &texture);
@@ -180,4 +203,5 @@ load_textures(const char* path)
 		std::cout << "stb: Failed to load image file!\n";
 		stbi_image_free(data);
 	}
+	return texture;
 }
