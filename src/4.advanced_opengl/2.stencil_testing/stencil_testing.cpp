@@ -7,16 +7,29 @@
 #include <learnopengl/camera.h>
 #include <learnopengl/shader.h>
 
+// General program data
 // window size
 unsigned int WINDOW_WIDTH = 800;
 unsigned int WINDOW_HEIGHT = 600;
+// initial cursor pos
+float lastX = (float)WINDOW_WIDTH / 2.0;
+float lastY = (float)WINDOW_HEIGHT / 2.0;
+// frame -- timing
+float deltaTime = 0.0f;
+float lastFrame = 0.0f;
+bool firstMouse = true;
 // camera
-Camera camera;
+Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
 
 // callback functions
-
 void
 process_input(GLFWwindow* window);
+void
+framebuffer_size_callback(GLFWwindow* window, int width, int height);
+void
+mouse_callback(GLFWwindow* window, double xpos, double ypos);
+void
+scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 
 unsigned int
 load_texture(const char* path);
@@ -49,6 +62,11 @@ main()
 		return -1;
 	}
 	glfwMakeContextCurrent(window);
+
+	// Register CallBack
+	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+	glfwSetCursorPosCallback(window, mouse_callback);
+	glfwSetScrollCallback(window, scroll_callback);
 
 	// step2- Load opengl functions using GLAD
 	//------------------------------------------------------
@@ -128,20 +146,38 @@ main()
 	// load texttures
 	unsigned int cubeTexture = load_texture("../../resources/textures/marble.jpg");
 	unsigned int floorTexture = load_texture("../../resources/textures/metal.png");
-	// unsigned int cube_texture
+	shader.setInt("texture1", 0);
+
+	// global opengl stats
+	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_STENCIL_TEST);
+
 	while (!glfwWindowShouldClose(window))
-	{
+	{ // frame timing
+		float currentCurent = static_cast<float>(glfwGetTime());
+		deltaTime = currentCurent - lastFrame;
+
 		// process inputs
 		//---------------
 		process_input(window);
 
 		// prepare frame
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-		// set model, view, projection
+		glStencilMask(0xFF);
+		glStencilFunc(GL_EQUAL, 1, 0xFF);
+
+		// Bind VAOs
+		glBindVertexArray(cubeVAO);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, cubeTexture);
+
+		// Model, view, projection
 		shader.use();
 		glm::mat4 model = glm::mat4(1.0);
+		model = glm::translate(model, glm::vec3(-1.0f, 0.0f, -1.0f));
+
 		glm::mat4 view = camera.GetViewMatrix();
 		glm::mat4 projection =
 			glm::perspective(glm::radians(camera.Zoom), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 100.f);
@@ -149,24 +185,94 @@ main()
 		shader.setMat4("model", model);
 		shader.setMat4("view", view);
 		shader.setMat4("projection", projection);
-		// Bind VAOs
-		glBindVertexArray(cubeVAO);
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, cubeTexture);
-		// DRAW Triangles
+
+		// Draw Triangles
 		glDrawArrays(GL_TRIANGLES, 0, 36);
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(2.0f, 0.0f, 0.0f));
+		shader.setMat4("model", model);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+		// Floor
+		glBindVertexArray(floorVAO);
+		model = glm::mat4(1.0f);
+		shader.setMat4("model", model);
+		glBindTexture(GL_TEXTURE_2D, floorTexture);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+		glBindVertexArray(0);
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
+	glDeleteVertexArrays(1, &cubeVAO);
+	glDeleteBuffers(1, &cubeVBO);
+	glDeleteVertexArrays(1, &floorVAO);
+	glDeleteBuffers(1, &floorVBO);
 	glfwTerminate();
+
+	return 0;
 }
 
+// process all input: query GLFW whether relevant keys are pressed/released this
+// frame and react accordingly
+// ---------------------------------------------------------------------------------------------------------
 void
 process_input(GLFWwindow* window)
 {
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
+
+	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+		camera.ProcessKeyboard(FORWARD, deltaTime);
+	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+		camera.ProcessKeyboard(BACKWARD, deltaTime);
+	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+		camera.ProcessKeyboard(LEFT, deltaTime);
+	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+		camera.ProcessKeyboard(RIGHT, deltaTime);
+}
+
+// glfw: whenever the window size changed (by OS or user resize) this callback
+// function executes
+// ---------------------------------------------------------------------------------------------
+void
+framebuffer_size_callback(GLFWwindow* window, int width, int height)
+{
+	// make sure the viewport matches the new window dimensions; note that width
+	// and height will be significantly larger than specified on retina displays.
+	glViewport(0, 0, width, height);
+}
+
+// glfw: whenever the mouse moves, this callback is called
+// -------------------------------------------------------
+void
+mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
+{
+	float xpos = static_cast<float>(xposIn);
+	float ypos = static_cast<float>(yposIn);
+
+	if (firstMouse)
+	{
+		lastX = xpos;
+		lastY = ypos;
+		firstMouse = false;
+	}
+
+	float xoffset = xpos - lastX;
+	float yoffset = lastY - ypos; // reversed since y-coordinates go from bottom to top
+
+	lastX = xpos;
+	lastY = ypos;
+
+	camera.ProcessMouseMovement(xoffset, yoffset);
+}
+
+// glfw: whenever the mouse scroll wheel scrolls, this callback is called
+// ----------------------------------------------------------------------
+void
+scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
+{
+	camera.ProcessMouseScroll(static_cast<float>(yoffset));
 }
 
 unsigned int
