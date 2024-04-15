@@ -181,6 +181,7 @@ main()
 
 	// Textures
 	unsigned int cube_texture = load_texture("../../resources/textures/marble.jpg");
+	unsigned int floor_texture = load_texture("../../resources/textures/metal.png");
 
 	while (!glfwWindowShouldClose(window))
 	{
@@ -210,7 +211,13 @@ main()
 		model = glm::translate(model, glm::vec3(2.0f, 0.0f, 0.0f));
 		shader.setMat4("model", model);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
+
 		// floor
+		glBindVertexArray(planeVAO);
+		glBindTexture(GL_TEXTURE_2D, floor_texture);
+		shader.setMat4("model", glm::mat4(1.0f));
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+		glBindVertexArray(0);
 
 		// window
 		glfwSwapBuffers(window);
