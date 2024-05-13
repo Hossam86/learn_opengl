@@ -11,5 +11,5 @@ cmake -B build-debug -S . -DCPM_SOURCE_CACHE=PATH_TO_CPM_CACHE
 - install libxcursor development package
 - install libxi development package
 
-sudo apt update 
-sudo apt install libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev 
+sudo apt update -y 
+sudo apt install libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev -y

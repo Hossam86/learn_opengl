@@ -1,4 +1,4 @@
-#include <common.h>
+#include <learnopengl/common.h>
 #include <cmath>
 
 // settings

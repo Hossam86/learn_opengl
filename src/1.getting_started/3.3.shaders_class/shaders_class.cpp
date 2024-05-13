@@ -1,5 +1,5 @@
-#include <common.h>
-#include <shader_s.h>
+#include <learnopengl/common.h>
+#include <learnopengl/shader_s.h>
 
 const char *TITLE = "learn_opengl -- green card ";
 
