@@ -54,10 +54,10 @@ CPMAddPackage(
 include_directories(${CMAKE_SOURCE_DIR}/include)
 
 # first create relevant static libraries required for other projects
-add_library(GLAD src/glad.c)
+add_library(GLAD STATIC src/glad.c)
 set(LIBS ${LIBS} glfw GLAD assimp)
 
-add_library(STB_IMAGE "src/stb_image.cpp")
+add_library(STB_IMAGE STATIC "src/stb_image.cpp")
 set(LIBS ${LIBS} STB_IMAGE)
 
 macro(makeLink src dest target)
@@ -142,7 +142,7 @@ set(1.getting_started
 	# 8.guest/2020/oit
 	# 8.guest/2020/skeletal_animation
 	8.guest/2021/1.scene/1.scene_graph
-	8.guest/2021/1.scene/2.frustum_culling
+	# 8.guest/2021/1.scene/2.frustum_culling
 	# 8.guest/2021/2.csm
 	# 8.guest/2021/3.tessellation/terrain_gpu_dist
 	# 8.guest/2021/3.tessellation/terrain_cpu_src
