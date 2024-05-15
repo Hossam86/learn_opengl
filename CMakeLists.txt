@@ -54,10 +54,10 @@ CPMAddPackage(
 include_directories(${CMAKE_SOURCE_DIR}/include)
 
 # first create relevant static libraries required for other projects
-add_library(GLAD STATIC src/glad.c)
+add_library(GLAD SHARED src/glad.c)
 set(LIBS ${LIBS} glfw GLAD assimp)
 
-add_library(STB_IMAGE STATIC "src/stb_image.cpp")
+add_library(STB_IMAGE SHARED "src/stb_image.cpp")
 set(LIBS ${LIBS} STB_IMAGE)
 
 macro(makeLink src dest target)

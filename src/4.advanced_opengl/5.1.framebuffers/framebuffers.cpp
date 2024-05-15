@@ -56,6 +56,16 @@ main()
 		std::cout << "glfw: failed to create window!\n";
 	}
 
+	// current context
+	glfwMakeContextCurrent(window);
+
+	// load opengl funcs
+	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+	{
+		std::cout << "Failed to initlize GLAD\n";
+		return -1;
+	}
+
 	while (!glfwWindowShouldClose(window))
 	{
 
