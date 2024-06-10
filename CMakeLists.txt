@@ -125,7 +125,7 @@ set(1.getting_started
 	3.2.blending_sort
 	5.1.framebuffers
 	# 5.2.framebuffers_exercise1
-	# 6.1.cubemaps_skybox
+	6.1.cubemaps_skybox
 	# 6.2.cubemaps_environment_mapping
 	# 8.advanced_glsl_ubo
 	# 9.1.geometry_shader_houses
